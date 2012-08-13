@@ -1,0 +1,28 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+	<parent>
+        <groupId>com.badlogic.gdx</groupId>
+        <artifactId>gdx-parent</artifactId>
+		<version>0.9.7-SNAPSHOT</version>		
+        <relativePath>../..</relativePath>
+    </parent>
+
+	<artifactId>gdx-backend-lwjgl</artifactId>	
+    <name>libgdx - Backend LWJGL</name>
+    <description> 
+        The LWJGL backend of libgdx. Runs on Windows, Linux and Mac OS X.
+    </description>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.badlogic.gdx</groupId>
+			<artifactId>gdx-openal</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.lwjgl.lwjgl</groupId>
+			<artifactId>lwjgl_util</artifactId>
+			<version>2.8.4</version>
+		</dependency>
+	</dependencies>
+</project>
