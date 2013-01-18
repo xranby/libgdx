@@ -31,7 +31,13 @@ import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.backends.joal.OpenALAudio;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL10;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.Pixmap.Format;
+import com.badlogic.gdx.graphics.g2d.Gdx2DPixmap;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.jogamp.newt.Screen;
 import com.jogamp.newt.ScreenMode;
@@ -83,6 +89,14 @@ public class JoglGraphics extends JoglGraphicsBase implements GLEventListener {
 		super.resume();
 	}
 
+	Texture textureFromPixmap (Gdx2DPixmap pixmap) {
+		Texture texture = new Texture(pixmap.getWidth(), pixmap.getHeight(), Format.RGB565);
+		texture.bind();
+		Gdx.gl.glTexImage2D(GL10.GL_TEXTURE_2D, 0, pixmap.getGLInternalFormat(), pixmap.getWidth(), pixmap.getHeight(), 0,
+			pixmap.getGLFormat(), pixmap.getGLType(), pixmap.getPixels());
+		return texture;
+	}
+	
 	@Override
 	public void init (GLAutoDrawable drawable) {
 		initializeGLInstances(drawable);
@@ -95,6 +109,15 @@ public class JoglGraphics extends JoglGraphicsBase implements GLEventListener {
 			}
 			created = true;
 		}
+		
+		// Fake pointer
+		Gdx2DPixmap pixmap = new Gdx2DPixmap(16, 16, Gdx2DPixmap.GDX2D_FORMAT_RGBA8888);
+		pixmap.clear(Color.rgba8888(0, 0, 0, 0.0f));
+		pixmap.drawLine(0, 0, 10, 16, Color.rgba8888(0, 1, 1, 0.5f));
+		pixmap.drawLine(0, 0, 8, 0, Color.rgba8888(0, 1, 1, 0.5f));
+		pixmap.drawLine(0, 0, 0, 8, Color.rgba8888(0, 1, 1, 0.5f));
+		pointer = new Sprite(textureFromPixmap (pixmap));
+		batch = new SpriteBatch();
 	}
 
 	@Override
@@ -123,11 +146,20 @@ public class JoglGraphics extends JoglGraphicsBase implements GLEventListener {
 				}
 				((JoglInput)(Gdx.input)).processEvents();
 				listener.render();
+				
+				// Fake mouse pointer
+				pointer.setPosition(((JoglInput)(Gdx.input)).getX(), canvas.getHeight()-((JoglInput)(Gdx.input)).getY()-16);
+				batch.begin();
+				pointer.draw(batch);
+				batch.end();
+				
 				((OpenALAudio)Gdx.audio).update();
 			}
 		}
 	}
-
+	SpriteBatch batch;
+	Sprite pointer;
+	
 	public void destroy () {
 		if (!canvas.getContext().isCurrent()) {
 		    canvas.getContext().makeCurrent();
