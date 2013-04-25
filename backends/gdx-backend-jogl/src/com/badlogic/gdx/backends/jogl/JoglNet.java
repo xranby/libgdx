@@ -20,6 +20,9 @@ import java.awt.Desktop;
 import java.net.URI;
 
 import com.badlogic.gdx.Net;
+import com.badlogic.gdx.Net.HttpRequest;
+import com.badlogic.gdx.Net.HttpResponseListener;
+import com.badlogic.gdx.net.NetJavaImpl;
 import com.badlogic.gdx.net.ServerSocket;
 import com.badlogic.gdx.net.ServerSocketHints;
 import com.badlogic.gdx.net.Socket;
@@ -28,18 +31,15 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
 
 public class JoglNet implements Net {
 	
-	// IMPORTANT: The Gdx.net classes are a currently duplicated for LWJGL + Android!
-	//            If you make changes here, make changes in the other backend as well.
-	
-	@Override
-	public HttpResult httpGet (String url, String... parameters) {
-		throw new UnsupportedOperationException("Not implemented");
-	}
+	// IMPORTANT: The Gdx.net classes are a currently duplicated for JOGL, LWJGL + Android!
+	//            If you make changes here, make changes in the other backends as well.
+    
+    NetJavaImpl netJavaImpl = new NetJavaImpl();
 
-	@Override
-	public HttpResult httpPost (String url, String contentType, byte[] content) {
-		throw new UnsupportedOperationException("Not implemented");
-	}
+    @Override
+    public void sendHttpRequest (HttpRequest httpRequest, HttpResponseListener httpResponseListener) {
+        netJavaImpl.sendHttpRequest(httpRequest, httpResponseListener);
+    }
 
 	@Override
 	public ServerSocket newServerSocket (Protocol protocol, int port, ServerSocketHints hints) {
