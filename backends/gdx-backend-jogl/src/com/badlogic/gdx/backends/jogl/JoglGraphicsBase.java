@@ -29,7 +29,6 @@ import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.GL11;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.GLCommon;
-import com.badlogic.gdx.graphics.GLU;
 import com.jogamp.newt.opengl.GLWindow;
 import com.jogamp.opengl.util.Animator;
 
@@ -50,7 +49,6 @@ public abstract class JoglGraphicsBase implements Graphics, GLEventListener {
 	GL10 gl10;
 	GL11 gl11;
 	GL20 gl20;
-	GLU glu;
 
 	void initialize (JoglApplicationConfiguration config) {
 		GLCapabilities caps;
@@ -73,8 +71,6 @@ public abstract class JoglGraphicsBase implements Graphics, GLEventListener {
 		//canvas.setBackground(Color.BLACK);
 		canvas.addGLEventListener(this);
 		this.useGL2 = config.useGL20;
-		this.glu = new JoglGLU();
-		Gdx.glu = glu;
 
 	}
 
@@ -185,11 +181,6 @@ public abstract class JoglGraphicsBase implements Graphics, GLEventListener {
 	@Override
 	public GLCommon getGLCommon () {
 		return gl;
-	}
-
-	@Override
-	public GLU getGLU () {
-		return glu;
 	}
 
 	@Override
