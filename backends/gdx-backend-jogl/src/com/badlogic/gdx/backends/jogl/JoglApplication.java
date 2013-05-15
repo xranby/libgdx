@@ -31,10 +31,12 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.LifecycleListener;
 import com.badlogic.gdx.Net;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.backends.jogl.JoglGraphics.JoglDisplayMode;
 import com.badlogic.gdx.backends.joal.OpenALAudio;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Clipboard;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.jogamp.newt.event.WindowAdapter;
@@ -54,6 +56,8 @@ public class JoglApplication implements Application {
 	List<Runnable> runnables = new ArrayList<Runnable>();
 	List<Runnable> executedRunnables = new ArrayList<Runnable>();
 	int logLevel = LOG_INFO;
+	protected ApplicationListener listener;
+	protected final Array<LifecycleListener> lifecycleListeners = new Array<LifecycleListener>();
 
 	/** Creates a new {@link JoglApplication} with the given title and dimensions. If useGL20IfAvailable is set the JoglApplication
 	 * will try to create an OpenGL 2.0 context which can then be used via JoglApplication.getGraphics().getGL20(). To query
@@ -80,6 +84,7 @@ public class JoglApplication implements Application {
 
 	void initialize (ApplicationListener listener, JoglApplicationConfiguration config) {
 		JoglNativesLoader.load();
+		this.listener = listener;
 		graphics = new JoglGraphics(listener, config);
 		input = new JoglInput(graphics.getCanvas());
 		audio = new OpenALAudio(16, config.audioDeviceBufferCount, config.audioDeviceBufferSize);
@@ -246,4 +251,23 @@ public class JoglApplication implements Application {
 	public Net getNet() {
 		return net;
 	}
+
+    @Override
+    public ApplicationListener getApplicationListener () {
+        return listener;
+    }
+
+    @Override
+    public void addLifecycleListener (LifecycleListener listener) {
+        synchronized (lifecycleListeners) {
+            lifecycleListeners.add(listener);
+        }
+    }
+
+    @Override
+    public void removeLifecycleListener (LifecycleListener listener) {
+        synchronized (lifecycleListeners) {
+            lifecycleListeners.removeValue(listener, true);
+        }
+    }
 }
