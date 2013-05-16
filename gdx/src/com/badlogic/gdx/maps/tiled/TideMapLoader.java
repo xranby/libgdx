@@ -52,7 +52,7 @@ public class TideMapLoader extends SynchronousAssetLoader<TiledMap, TideMapLoade
 			}
 			DirectImageResolver imageResolver = new DirectImageResolver(textures);
 			TiledMap map = loadMap(root, tideFile, imageResolver);
-			map.setOwnedTextures(textures.values().toArray());
+			map.setOwnedResources(textures.values().toArray());
 			return map;
 		} catch(IOException e) {
 			throw new GdxRuntimeException("Couldn't load tilemap '" + fileName + "'", e);
@@ -182,7 +182,7 @@ public class TideMapLoader extends SynchronousAssetLoader<TiledMap, TideMapLoade
 				}
 			}
 			
-			Element properties = element.getChildByName("Proeprties");
+			Element properties = element.getChildByName("Properties");
 			if (properties != null) {
 				loadProperties(tileset.getProperties(), properties);
 			}
@@ -252,7 +252,7 @@ public class TideMapLoader extends SynchronousAssetLoader<TiledMap, TideMapLoade
 					}
 				}
 			}
-			map.getLayers().addLayer(layer);
+			map.getLayers().add(layer);
 		}
 	}
 	
@@ -264,11 +264,11 @@ public class TideMapLoader extends SynchronousAssetLoader<TiledMap, TideMapLoade
 				String value = property.getText();
 				
 				if (type.equals("Int32")) {
-					
+					properties.put(key, Integer.parseInt(value));
 				} else if (type.equals("String")) {
-					
+					properties.put(key, value);
 				} else if (type.equals("Boolean")) {
-					
+					properties.put(key, value.equalsIgnoreCase("true"));
 				} else {
 					properties.put(key, value);					
 				}

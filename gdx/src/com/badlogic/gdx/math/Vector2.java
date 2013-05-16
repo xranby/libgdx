@@ -134,38 +134,53 @@ public class Vector2 implements Serializable, Vector<Vector2> {
 	/** Multiplies this vector by a scalar
 	 * @param scalar The scalar
 	 * @return This vector for chaining */
-	public Vector2 mul (float scalar) {
+	public Vector2 scl (float scalar) {
 		x *= scalar;
 		y *= scalar;
 		return this;
 	}
+	
+	/** @deprecated Use {@link #scl(float)} instead. */
+	public Vector2 mul (float scalar) {
+		return scl(scalar);
+	}
 
 	/** Multiplies this vector by a scalar
 	 * @return This vector for chaining */
-	public Vector2 mul (float x, float y) {
+	public Vector2 scl (float x, float y) {
 		this.x *= x;
 		this.y *= y;
 		return this;
 	}
 	
+	/** @deprecated Use {@link #scl(float, float)} instead. */
+	public Vector2 mul (float x, float y) {
+		return scl(x,y);
+	}
+	
 	/** Multiplies this vector by a vector
 	 * @return This vector for chaining */
-	public Vector2 mul (Vector2 v) {
+	public Vector2 scl (Vector2 v) {
 		this.x *= v.x;
 		this.y *= v.y;
 		return this;
 	}
+	
+	/** @deprecated Use {@link #scl(Vector2)} instead. */
+	public Vector2 mul (Vector2 v) {
+		return scl(v);
+	}
 
 	public Vector2 div (float value) {
-		return this.mul(1 / value);
+		return this.scl(1 / value);
 	}
 
 	public Vector2 div (float vx, float vy) {
-		return this.mul(1 / vx, 1 / vy);
+		return this.scl(1 / vx, 1 / vy);
 	}
 
 	public Vector2 div (Vector2 other) {
-		return this.mul(1 / other.x, 1 / other.y);
+		return this.scl(1 / other.x, 1 / other.y);
 	}
 
 	/** @param v The other vector
@@ -208,8 +223,23 @@ public class Vector2 implements Serializable, Vector<Vector2> {
 	public Vector2 limit (float limit) {
 		if (len2() > limit * limit) {
 			nor();
-			mul(limit);
+			scl(limit);
 		}
+		return this;
+	}
+	
+	/** Clamps this vector's length to given value
+	 * @param min Min length
+	 * @param max Max length
+	 * @return This vector for chaining */
+	public Vector2 clamp (float min, float max) {
+		final float l2 = len2();
+		if (l2 == 0f)
+			return this;
+		if (l2 > max * max)
+			return nor().scl(max);
+		if (l2 < min * min)
+			return nor().scl(min);
 		return this;
 	}
 

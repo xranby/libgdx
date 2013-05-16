@@ -1,4 +1,3 @@
-
 package com.badlogic.gdx.net;
 
 import java.io.BufferedReader;
@@ -21,9 +20,8 @@ import com.badlogic.gdx.Net.HttpMethods;
 import com.badlogic.gdx.Net.HttpRequest;
 import com.badlogic.gdx.Net.HttpResponse;
 import com.badlogic.gdx.Net.HttpResponseListener;
-import com.badlogic.gdx.Net.HttpStatus;
-import com.badlogic.gdx.StreamUtils;
 import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.badlogic.gdx.utils.StreamUtils;
 
 /** Implements part of the {@link Net} API using {@link HttpURLConnection}, to be easily reused between the Android and Desktop
  * backends.
@@ -38,7 +36,11 @@ public class NetJavaImpl {
 
 		public HttpClientResponse (HttpURLConnection connection) throws IOException {
 			this.connection = connection;
-			this.inputStream = connection.getInputStream();
+			try {
+				this.inputStream = connection.getInputStream();
+			} catch (IOException e) {
+				this.inputStream = connection.getErrorStream();
+			}
 
 			try {
 				this.status = new HttpStatus(connection.getResponseCode());
@@ -119,7 +121,8 @@ public class NetJavaImpl {
 
 			final HttpURLConnection connection = (HttpURLConnection)url.openConnection();
 			// should be enabled to upload data.
-			connection.setDoOutput(method.equalsIgnoreCase(HttpMethods.POST));
+			final boolean doingOutPut = method.equalsIgnoreCase(HttpMethods.POST) || method.equalsIgnoreCase(HttpMethods.PUT); 
+			connection.setDoOutput(doingOutPut);
 			connection.setDoInput(true);
 			connection.setRequestMethod(method);
 
@@ -138,8 +141,8 @@ public class NetJavaImpl {
 				public void run () {
 					try {
 
-						// Set the content for POST (GET has the information embedded in the URL)
-						if (method.equalsIgnoreCase(HttpMethods.POST)) {
+						// Set the content for POST and PUT (GET has the information embedded in the URL)
+						if (doingOutPut) {
 							// we probably need to use the content as stream here instead of using it as a string.
 							String contentAsString = httpRequest.getContent();
 							InputStream contentAsStream = httpRequest.getContentStream();
@@ -159,14 +162,13 @@ public class NetJavaImpl {
 
 						connection.connect();
 
+						final HttpClientResponse clientResponse = new HttpClientResponse(connection);
 						// post a runnable to sync the handler with the main thread
 						Gdx.app.postRunnable(new Runnable() {
 							@Override
 							public void run () {
 								try {
-									httpResponseListener.handleHttpResponse(new HttpClientResponse(connection));
-								} catch (IOException e) {
-									httpResponseListener.failed(e);
+									httpResponseListener.handleHttpResponse(clientResponse);
 								} finally {
 									connection.disconnect();
 								}

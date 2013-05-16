@@ -54,6 +54,9 @@ import com.badlogic.gdx.utils.SnapshotArray;
  * @author mzechner
  * @author Nathan Sweet */
 public class Stage extends InputAdapter implements Disposable {
+	static private final Vector2 actorCoords = new Vector2();
+	static private final Vector3 cameraCoords = new Vector3();
+
 	private float width, height;
 	private float gutterWidth, gutterHeight;
 	private float centerX, centerY;
@@ -70,12 +73,6 @@ public class Stage extends InputAdapter implements Disposable {
 	private Actor mouseOverActor;
 	private Actor keyboardFocus, scrollFocus;
 	private SnapshotArray<TouchFocus> touchFocuses = new SnapshotArray(true, 4, TouchFocus.class);
-
-	/* Scratch object used by hit(). */
-	private static final Vector2 actorCoords = new Vector2();
-
-	/* Scratch object used by screenToStageCoordinates() and stageToScreenCoordinates(). */
-	private static final Vector3 cameraCoords = new Vector3();
 
 	/** Creates a stage with a {@link #setViewport(float, float, boolean) viewport} equal to the device screen resolution. The stage
 	 * will use its own {@link SpriteBatch}. */
@@ -653,8 +650,7 @@ public class Stage extends InputAdapter implements Disposable {
 	}
 
 	/** Transforms the screen coordinates to stage coordinates.
-	 * 
-	 * @param screenCoords input screen coordinates and output for resulting stage coordinates. */
+	 * @param screenCoords Input screen coordinates and output for resulting stage coordinates. */
 	public Vector2 screenToStageCoordinates (Vector2 screenCoords) {
 		camera.unproject(cameraCoords.set(screenCoords.x, screenCoords.y, 0));
 		screenCoords.x = cameraCoords.x;
@@ -662,25 +658,26 @@ public class Stage extends InputAdapter implements Disposable {
 		return screenCoords;
 	}
 
-	/** Transforms the stage coordinates to screen coordinates. 
-	 * 
-	 * @param stageCoords input stage coordinates and output for resulting screen coordinates */
+	/** Transforms the stage coordinates to screen coordinates.
+	 * @param stageCoords Input stage coordinates and output for resulting screen coordinates. */
 	public Vector2 stageToScreenCoordinates (Vector2 stageCoords) {
-		cameraCoords.set(stageCoords.x, stageCoords.y, 0);
-		camera.project(cameraCoords);
+		camera.project(cameraCoords.set(stageCoords.x, stageCoords.y, 0));
 		stageCoords.x = cameraCoords.x;
-		stageCoords.y = cameraCoords.y;
+		stageCoords.y = Gdx.graphics.getHeight() - cameraCoords.y;
 		return stageCoords;
 	}
 
 	/** Transforms the coordinates to screen coordinates. The coordinates can be anywhere in the stage since the transform matrix
-	 * describes how to convert them. The transform matrix is typically obtained from {@link SpriteBatch#getTransformMatrix()}. */
+	 * describes how to convert them. The transform matrix is typically obtained from {@link SpriteBatch#getTransformMatrix()}
+	 * during {@link Actor#draw(SpriteBatch, float)}.
+	 * @see Actor#localToStageCoordinates(Vector2) */
 	public Vector2 toScreenCoordinates (Vector2 coords, Matrix4 transformMatrix) {
 		ScissorStack.toWindowCoordinates(camera, transformMatrix, coords);
 		return coords;
 	}
 
 	public void dispose () {
+		clear();
 		if (ownsBatch) batch.dispose();
 	}
 
