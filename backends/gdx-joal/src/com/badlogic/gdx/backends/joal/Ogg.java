@@ -45,6 +45,12 @@ public class Ogg {
 			input.close();
 			input = null;
 		}
+
+		@Override
+		public float getVolume () {
+			// TODO Auto-generated method stub
+			return 1;
+		}
 	}
 
 	static public class Sound extends OpenALSound {
