@@ -200,6 +200,7 @@ public abstract class JoglGraphicsBase implements Graphics, GLEventListener {
 
 	@Override
 	public void requestRendering () {
-		canvas.display();
+		//TODO: fix recursive loop
+		//canvas.display();
 	}
 }
