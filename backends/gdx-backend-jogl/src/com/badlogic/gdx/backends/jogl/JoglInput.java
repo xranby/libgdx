@@ -26,6 +26,7 @@ import javax.media.nativewindow.util.Point;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.utils.Pool;
 import com.jogamp.newt.event.KeyListener;
 import com.jogamp.newt.event.MouseEvent;
@@ -635,5 +636,11 @@ public class JoglInput implements Input, MouseListener, KeyListener {
 
 	@Override
 	public void getRotationMatrix (float[] matrix) {
+	}
+
+	@Override
+	public void setCursorImage(Pixmap pixmap, int xHotspot, int yHotspot) {
+		// FIXME use GLWindow.setPointerIcon() and Display.createPointerIcon()
+		
 	}
 }

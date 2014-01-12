@@ -59,6 +59,7 @@ import javax.swing.event.DocumentListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.utils.Pool;
 
 public class JoglAWTInput implements Input, MouseMotionListener, MouseListener, MouseWheelListener, KeyListener {
@@ -802,5 +803,11 @@ public class JoglAWTInput implements Input, MouseMotionListener, MouseListener, 
 	public void getRotationMatrix (float[] matrix) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public void setCursorImage(Pixmap pixmap, int xHotspot, int yHotspot) {
+		// TODO Auto-generated method stub
+		
 	}
 }

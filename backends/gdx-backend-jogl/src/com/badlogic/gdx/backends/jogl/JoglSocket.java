@@ -105,4 +105,9 @@ public class JoglSocket  implements Socket {
 			}
 		}
 	}
+	
+	@Override
+	public String getRemoteAddress () {
+		return socket.getRemoteSocketAddress().toString();
+	}
 }

@@ -422,11 +422,6 @@ final class JoglGL20 implements GL20 {
 	}
 
 	@Override
-	public void glGetShaderSource (int shader, int bufsize, Buffer length, String source) {
-		throw new UnsupportedOperationException("unsupported, won't implement.");
-	}
-
-	@Override
 	public void glGetShaderiv (int shader, int pname, IntBuffer params) {
 		GLContext.getCurrentGL().getGL2ES2().glGetShaderiv(shader, pname, params);
 	}

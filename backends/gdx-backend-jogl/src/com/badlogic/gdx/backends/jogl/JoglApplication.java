@@ -209,14 +209,6 @@ public class JoglApplication implements Application {
 	}
 
 	@Override
-	public void log (String tag, String message, Exception exception) {
-		if (logLevel >= LOG_INFO) {
-			System.out.println(tag + ": " + message);
-			exception.printStackTrace(System.out);
-		}
-	}
-
-	@Override
 	public void error (String tag, String message) {
 		if (logLevel >= LOG_ERROR) {
 			System.err.println(tag + ": " + message);
@@ -270,4 +262,18 @@ public class JoglApplication implements Application {
             lifecycleListeners.removeValue(listener, true);
         }
     }
+
+	@Override
+	public void log(String tag, String message, Throwable exception) {
+		if (logLevel >= LOG_INFO) {
+			System.out.println(tag + ": " + message);
+			exception.printStackTrace(System.out);
+		}
+		
+	}
+
+	@Override
+	public int getLogLevel() {
+		return logLevel;
+	}
 }
