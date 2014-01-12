@@ -163,7 +163,7 @@ class JoglGL10 implements GL10 {
 	@Override
 	public final void glDrawElements (int mode, int count, int type, Buffer indices) {
 		// nothing to do here per documentation
-		GLContext.getCurrentGL().glDrawElements(mode, count, type, indices);
+		GLContext.getCurrentGL().getGL2ES1().glDrawElements(mode, count, type, indices);
 	}
 
 	@Override

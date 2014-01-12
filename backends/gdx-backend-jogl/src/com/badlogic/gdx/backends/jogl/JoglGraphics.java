@@ -33,10 +33,10 @@ import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.backends.joal.OpenALAudio;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.jogamp.newt.MonitorDevice;
+import com.jogamp.newt.MonitorMode;
 import com.jogamp.newt.Screen;
-import com.jogamp.newt.ScreenMode;
-import com.jogamp.newt.util.MonitorMode;
-import com.jogamp.newt.util.ScreenModeUtil;
+import com.jogamp.newt.util.MonitorModeUtil;
 
 /** Implements the {@link Graphics} interface with Jogl.
  * 
@@ -58,9 +58,9 @@ public class JoglGraphics extends JoglGraphicsBase implements GLEventListener {
 		canvas.setFullscreen(config.fullscreen);
 		canvas.setUndecorated(config.fullscreen);
 		canvas.getScreen().addReference();
-		ScreenMode mode = canvas.getScreen().getCurrentScreenMode();
+		MonitorMode mode = canvas.getMainMonitor().getCurrentMode();
 		//FIXME use JoglApplicationConfiguration.getDesktopDisplayMode ()
-		desktopMode = (JoglDisplayMode) new JoglDisplayMode(mode.getRotatedWidth(), mode.getRotatedHeight(), mode.getMonitorMode().getRefreshRate(), mode.getMonitorMode().getSurfaceSize().getBitsPerPixel(), mode);
+		desktopMode = (JoglDisplayMode) new JoglDisplayMode(mode.getRotatedWidth(), mode.getRotatedHeight(), (int) mode.getRefreshRate(), mode.getSurfaceSize().getBitsPerPixel(), mode);
 	}
 
 	public void create () {
@@ -139,9 +139,8 @@ public class JoglGraphics extends JoglGraphicsBase implements GLEventListener {
 	private float getScreenResolution() {
 		Screen screen = canvas.getScreen();
 		screen.addReference();
-		ScreenMode sm = screen.getCurrentScreenMode();
-		final MonitorMode mmode = sm.getMonitorMode();
-		final DimensionImmutable sdim = mmode.getScreenSizeMM();
+		MonitorMode mmode = canvas.getMainMonitor().getCurrentMode();
+		final DimensionImmutable sdim = canvas.getMainMonitor().getSizeMM();
 		final DimensionImmutable spix = mmode.getSurfaceSize().getResolution();
         float screenResolution = (float)spix.getWidth() / (float)sdim.getWidth();
         canvas.getScreen().removeReference();
@@ -179,9 +178,9 @@ public class JoglGraphics extends JoglGraphicsBase implements GLEventListener {
 	}
 
 	protected static class JoglDisplayMode extends DisplayMode {
-		final ScreenMode mode;
+		final MonitorMode mode;
 
-		protected JoglDisplayMode (int width, int height, int refreshRate, int bitsPerPixel, ScreenMode mode) {
+		protected JoglDisplayMode (int width, int height, int refreshRate, int bitsPerPixel, MonitorMode mode) {
 			super(width, height, refreshRate, bitsPerPixel);
 			this.mode = mode;
 		}
@@ -190,11 +189,11 @@ public class JoglGraphics extends JoglGraphicsBase implements GLEventListener {
 	@Override
 	public DisplayMode[] getDisplayModes () {
 		//FIXME use JoglApplicationConfiguration.getDisplayModes()
-		List<ScreenMode> screenModes = canvas.getScreen().getScreenModes();
+		List<MonitorMode> screenModes = canvas.getScreen().getMonitorModes();
 		DisplayMode[] displayModes = new DisplayMode[screenModes.size()];
 		for (int modeIndex = 0 ; modeIndex < displayModes.length ; modeIndex++) {
-			ScreenMode mode = screenModes.get(modeIndex);
-			displayModes[modeIndex] = new JoglDisplayMode(mode.getRotatedWidth(), mode.getRotatedHeight(), mode.getMonitorMode().getRefreshRate(), mode.getMonitorMode().getSurfaceSize().getBitsPerPixel(), mode);
+			MonitorMode mode = screenModes.get(modeIndex);
+			displayModes[modeIndex] = new JoglDisplayMode(mode.getRotatedWidth(), mode.getRotatedHeight(), (int) mode.getRefreshRate(), mode.getSurfaceSize().getBitsPerPixel(), mode);
 		}
 		return displayModes;
 	}
@@ -214,19 +213,20 @@ public class JoglGraphics extends JoglGraphicsBase implements GLEventListener {
 		if (width == canvas.getWidth() && height == canvas.getHeight() && canvas.isFullscreen() == fullscreen) {
 			return true;
 		}
-		ScreenMode targetDisplayMode = null;
-		List<ScreenMode> screenModes = canvas.getScreen().getScreenModes();
+		MonitorMode targetDisplayMode = null;
+		final MonitorDevice monitor = canvas.getMainMonitor();
+        List<MonitorMode> monitorModes = monitor.getSupportedModes();
 		Dimension dimension = new Dimension(width,height);
-		screenModes = ScreenModeUtil.filterByResolution(screenModes, dimension);
-		screenModes = ScreenModeUtil.filterByRate(screenModes, canvas.getScreen().getCurrentScreenMode().getMonitorMode().getRefreshRate());
-		screenModes = ScreenModeUtil.getHighestAvailableRate(screenModes);
-		if (screenModes == null || screenModes.isEmpty()) {
+		monitorModes = MonitorModeUtil.filterByResolution(monitorModes, dimension);
+		monitorModes = MonitorModeUtil.filterByRate(monitorModes, canvas.getMainMonitor().getCurrentMode().getRefreshRate());
+		monitorModes = MonitorModeUtil.getHighestAvailableRate(monitorModes);
+		if (monitorModes == null || monitorModes.isEmpty()) {
 			return false;
 		}
-		targetDisplayMode = screenModes.get(0);
+		targetDisplayMode = monitorModes.get(0);
 		canvas.setUndecorated(fullscreen);
 		canvas.setFullscreen(fullscreen);
-		canvas.getScreen().setCurrentScreenMode(targetDisplayMode);
+		monitor.setCurrentMode(targetDisplayMode);
 		if (Gdx.gl != null) Gdx.gl.glViewport(0, 0, targetDisplayMode.getRotatedWidth(), targetDisplayMode.getRotatedHeight());
 		config.width = targetDisplayMode.getRotatedWidth();
 		config.height = targetDisplayMode.getRotatedHeight();
@@ -235,11 +235,11 @@ public class JoglGraphics extends JoglGraphicsBase implements GLEventListener {
 	
 	@Override
 	public boolean setDisplayMode (DisplayMode displayMode) {
-		ScreenMode screenMode = ((JoglDisplayMode)displayMode).mode;
+		MonitorMode screenMode = ((JoglDisplayMode)displayMode).mode;
 		
 		canvas.setUndecorated(true);
 		canvas.setFullscreen(true);
-		canvas.getScreen().setCurrentScreenMode(screenMode);
+		canvas.getMainMonitor().setCurrentMode(screenMode);
 		if (Gdx.gl != null) Gdx.gl.glViewport(0, 0, displayMode.width, displayMode.height);
 		config.width = displayMode.width;
 		config.height = displayMode.height;

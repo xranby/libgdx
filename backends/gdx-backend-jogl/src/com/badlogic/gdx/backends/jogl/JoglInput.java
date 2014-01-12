@@ -380,7 +380,7 @@ public class JoglInput implements Input, MouseListener, KeyListener {
 			event.pointer = 0;
 			event.type = TouchEvent.TOUCH_SCROLLED;
 			// JogAmp JOGL NEWT wheel UP == libgdx wheel DOWN
-			event.scrollAmount = -1.0f * e.getWheelRotation();
+			event.scrollAmount = -1.0f * e.getRotation()[1];
 			event.timeStamp = System.nanoTime();
 			touchEvents.add(event);
 		}
@@ -409,18 +409,6 @@ public class JoglInput implements Input, MouseListener, KeyListener {
 			event.timeStamp = System.nanoTime();
 			keyEvents.add(event);
 			keys.remove(event.keyCode);
-		}
-	}
-
-	@Override
-	public void keyTyped (com.jogamp.newt.event.KeyEvent e) {
-		synchronized (this) {
-			KeyEvent event = usedKeyEvents.obtain();
-			event.keyChar = e.getKeyChar();
-			event.keyCode = 0;
-			event.type = KeyEvent.KEY_TYPED;
-			event.timeStamp = System.nanoTime();
-			keyEvents.add(event);
 		}
 	}
 
@@ -641,6 +629,8 @@ public class JoglInput implements Input, MouseListener, KeyListener {
 	@Override
 	public void setCursorImage(Pixmap pixmap, int xHotspot, int yHotspot) {
 		// FIXME use GLWindow.setPointerIcon() and Display.createPointerIcon()
+		
+		
 		
 	}
 }

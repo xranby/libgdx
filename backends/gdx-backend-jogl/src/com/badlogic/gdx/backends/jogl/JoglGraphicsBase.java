@@ -105,8 +105,8 @@ public abstract class JoglGraphicsBase implements Graphics, GLEventListener {
 
 	void initializeGLInstances (GLAutoDrawable drawable) {
 		String renderer = drawable.getGL().glGetString(GL.GL_RENDERER);
-		major = drawable.getGL().getContext().getGLVersionMajor();
-		minor = drawable.getGL().getContext().getGLVersionMinor();
+		major = drawable.getGL().getContext().getGLVersionNumber().getMajor();
+		minor = drawable.getGL().getContext().getGLVersionNumber().getMinor();
 
 		if (useGL2 && drawable.getGLProfile().isGL2ES2()) {
 			gl20 = new JoglGL20();
