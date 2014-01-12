@@ -22,7 +22,6 @@ import java.nio.IntBuffer;
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.openal.*;
 import com.jogamp.openal.util.ALut;
-
 import com.badlogic.gdx.Audio;
 import com.badlogic.gdx.audio.AudioDevice;
 import com.badlogic.gdx.audio.AudioRecorder;
@@ -211,6 +210,30 @@ public class OpenALAudio implements Audio {
 			}
 		}
 	}
+	
+	void pauseSourcesWithBuffer (int bufferID) {
+		if (noDevice) return;
+		for (int i = 0, n = idleSources.size; i < n; i++) {
+			int sourceID = idleSources.get(i);
+			al.alGetSourcei(sourceID, ALConstants.AL_BUFFER, ib);
+			if (ib.get(0) == bufferID)
+				al.alSourcePause(sourceID);
+		}
+	}
+	
+	void resumeSourcesWithBuffer (int bufferID) {
+		if (noDevice) return;
+		for (int i = 0, n = idleSources.size; i < n; i++) {
+			int sourceID = idleSources.get(i);
+			al.alGetSourcei(sourceID, ALConstants.AL_BUFFER, ib);
+			if (ib.get(0) == bufferID) {
+				al.alGetSourcei(sourceID, ALConstants.AL_SOURCE_STATE, ib);
+				int state = ib.get(0);
+				if (state == ALConstants.AL_PAUSED)
+					al.alSourcePlay(sourceID);
+			}
+		}
+	}
 
 	public void update () {
 		if (noDevice) return;
@@ -227,6 +250,21 @@ public class OpenALAudio implements Audio {
 		if (!soundIdToSource.containsKey(soundId)) return;
 		int sourceId = soundIdToSource.get(soundId);
 		al.alSourceStop(sourceId);
+	}
+	
+	public void pauseSound (long soundId) {
+		if (!soundIdToSource.containsKey(soundId)) return;
+		int sourceId = soundIdToSource.get(soundId);
+		al.alSourcePause(sourceId);
+	}
+	
+	public void resumeSound (long soundId) {
+		if (!soundIdToSource.containsKey(soundId)) return;
+		int sourceId = soundIdToSource.get(soundId);
+		al.alGetSourcei(sourceId, ALConstants.AL_SOURCE_STATE, ib);
+		int state = ib.get(0);
+		if (state == ALConstants.AL_PAUSED)
+			al.alSourcePlay(sourceId);
 	}
 
 	public void setSoundGain (long soundId, float volume) {

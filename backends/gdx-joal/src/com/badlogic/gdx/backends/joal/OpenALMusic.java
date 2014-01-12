@@ -22,9 +22,10 @@ import java.nio.IntBuffer;
 
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.openal.ALConstants;
-
 import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Music.OnCompletionListener;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
 /** @author Nathan Sweet */
@@ -43,9 +44,12 @@ public abstract class OpenALMusic implements Music {
 	private int format, sampleRate;
 	private boolean isLooping, isPlaying;
 	private float volume = 1;
+	private float pan = 0;
 	private float renderedSeconds, secondsPerBuffer;
 
 	protected final FileHandle file;
+	
+	private OnCompletionListener onCompletionListener;
 
 	public OpenALMusic (OpenALAudio audio, FileHandle file) {
 		this.audio = audio;
@@ -53,6 +57,7 @@ public abstract class OpenALMusic implements Music {
 		if (audio != null) {
 			if (!audio.noDevice) audio.music.add(this);
 		}
+		this.onCompletionListener = null;
 	}
 
 	protected void setup (int channels, int sampleRate) {
@@ -72,7 +77,7 @@ public abstract class OpenALMusic implements Music {
 				if (audio.getAL().alGetError() != ALConstants.AL_NO_ERROR) throw new GdxRuntimeException("Unabe to allocate audio buffers.");
 			}
 			audio.getAL().alSourcei(sourceID, ALConstants.AL_LOOPING, ALConstants.AL_FALSE);
-			audio.getAL().alSourcef(sourceID, ALConstants.AL_GAIN, volume);
+			setPan(pan, volume);
 			for (int i = 0; i < bufferCount; i++) {
 				int bufferID = buffers.get(i);
 				if (!fill(bufferID)) break;
@@ -123,6 +128,23 @@ public abstract class OpenALMusic implements Music {
 		if (audio.noDevice) return;
 		if (sourceID != -1) audio.getAL().alSourcef(sourceID, ALConstants.AL_GAIN, volume);
 	}
+	
+	@Override
+	public float getVolume () {
+		return this.volume;
+	}
+	
+	@Override
+	public void setPan (float pan, float volume) {
+		this.volume = volume;
+		this.pan = pan;
+		if (audio.noDevice) return;
+		if (sourceID == -1) return;
+		audio.getAL().alSource3f(sourceID, ALConstants.AL_POSITION, MathUtils.cos((pan - 1) * MathUtils.PI / 2), 0,
+			MathUtils.sin((pan + 1) * MathUtils.PI / 2));
+		audio.getAL().alSourcef(sourceID, ALConstants.AL_GAIN, volume);
+		
+	}
 
 	public float getPosition () {
 		if (audio.noDevice) return 0;
@@ -168,7 +190,10 @@ public abstract class OpenALMusic implements Music {
 			else
 				end = true;
 		}
-		if (end && isCurrentSourceWithNoBuffersQueued()) stop();
+		if (end && isCurrentSourceWithNoBuffersQueued()) {
+			if (onCompletionListener != null) onCompletionListener.onCompletion(this);
+			stop();
+		}
 
 		// A buffer underflow will cause the source to stop.
 		if (isPlaying && !isCurrentSourcePlaying()) audio.getAL().alSourcePlay(sourceID);
@@ -212,5 +237,15 @@ public abstract class OpenALMusic implements Music {
 		}
 		audio.getAL().alDeleteBuffers(buffers.limit(), buffers);
 		buffers = null;
+		onCompletionListener = null;
+	}
+	
+	@Override
+	public void setOnCompletionListener (OnCompletionListener listener) {
+		onCompletionListener = listener;
+	}
+	
+	public int getSourceId () {
+		return sourceID;
 	}
 }

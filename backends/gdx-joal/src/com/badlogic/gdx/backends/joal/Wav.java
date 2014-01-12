@@ -55,12 +55,6 @@ public class Wav {
 			}
 			input = null;
 		}
-
-		@Override
-		public float getVolume () {
-			// TODO Auto-generated method stub
-			return 1;
-		}
 	}
 
 	static public class Sound extends OpenALSound {
