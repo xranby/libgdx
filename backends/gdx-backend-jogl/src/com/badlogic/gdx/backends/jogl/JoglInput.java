@@ -21,13 +21,19 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.media.nativewindow.util.Dimension;
+import javax.media.nativewindow.util.DimensionImmutable;
+import javax.media.nativewindow.util.PixelFormat;
+import javax.media.nativewindow.util.PixelRectangle;
 import javax.media.nativewindow.util.Point;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.Pool;
+import com.jogamp.newt.Display.PointerIcon;
 import com.jogamp.newt.event.KeyListener;
 import com.jogamp.newt.event.MouseEvent;
 import com.jogamp.newt.event.MouseListener;
@@ -628,9 +634,35 @@ public class JoglInput implements Input, MouseListener, KeyListener {
 
 	@Override
 	public void setCursorImage(Pixmap pixmap, int xHotspot, int yHotspot) {
-		// FIXME use GLWindow.setPointerIcon() and Display.createPointerIcon()
-		
-		
-		
+		if (xHotspot < 0 || xHotspot >= pixmap.getWidth()) {
+	        throw new GdxRuntimeException ("xHotspot coordinate of " + xHotspot  + " is not within image width bounds: [0, " + pixmap.getWidth() + ").");
+	    }
+
+	    if (yHotspot < 0 || yHotspot >= pixmap.getHeight()) {
+	        throw new GdxRuntimeException ("yHotspot coordinate of " + yHotspot  + " is not within image height bounds: [0, " + pixmap.getHeight() + ").");
+	    }
+		final DimensionImmutable size = new Dimension(pixmap.getWidth(), pixmap.getHeight());
+		PixelFormat pixFormat = null;
+        switch(pixmap.getFormat()) {
+        case Alpha:
+        	break;
+        case Intensity:
+        	break;
+        case LuminanceAlpha:
+        	break;
+        case RGB565:
+        	break;
+        case RGB888:
+        	pixFormat = PixelFormat.RGB888;
+        	break;
+        case RGBA4444:
+        	break;
+        case RGBA8888:
+        	pixFormat = PixelFormat.RGBA8888;
+        	break;
+        }
+		PixelRectangle.GenericPixelRect rec = new PixelRectangle.GenericPixelRect(pixFormat, size, 0, true, pixmap.getPixels());
+		PointerIcon joglCursor = canvas.getScreen().getDisplay().createPointerIcon(rec, xHotspot, yHotspot);
+		canvas.setPointerIcon(joglCursor);
 	}
 }
