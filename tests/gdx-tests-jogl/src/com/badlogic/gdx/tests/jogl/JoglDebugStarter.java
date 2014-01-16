@@ -18,10 +18,7 @@ package com.badlogic.gdx.tests.jogl;
 
 import com.badlogic.gdx.backends.jogl.JoglApplication;
 import com.badlogic.gdx.backends.jogl.JoglApplicationConfiguration;
-import com.badlogic.gdx.tests.BulletTestCollection;
-import com.badlogic.gdx.tests.SoundTest;
-import com.badlogic.gdx.tests.bullet.SoftMeshTest;
-import com.badlogic.gdx.tests.extensions.Mpg123Test;
+import com.badlogic.gdx.tests.superkoalio.SuperKoalio;
 import com.badlogic.gdx.tests.utils.GdxTest;
 import com.badlogic.gdx.utils.SharedLibraryLoader;
 
@@ -31,10 +28,13 @@ public class JoglDebugStarter {
 		new SharedLibraryLoader("../../extensions/gdx-audio/libs/gdx-audio-natives.jar").load("gdx-audio");
 		new SharedLibraryLoader("../../extensions/gdx-image/libs/gdx-image-natives.jar").load("gdx-image");
 		new SharedLibraryLoader("../../extensions/gdx-freetype/libs/gdx-freetype-natives.jar").load("gdx-freetype");
+		new SharedLibraryLoader("../../extensions/gdx-controllers/gdx-controllers-desktop/libs/gdx-controllers-desktop-natives.jar")
+			.load("gdx-controllers-desktop");
 		new SharedLibraryLoader("../../gdx/libs/gdx-natives.jar").load("gdx");
 
-		GdxTest test = new Mpg123Test();
+		GdxTest test = new SuperKoalio();
 		JoglApplicationConfiguration config = new JoglApplicationConfiguration();
+		config.vSyncEnabled = true;
 		config.useGL20 = test.needsGL20();
 		new JoglApplication(test, config);
 	}

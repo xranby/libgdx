@@ -46,7 +46,7 @@ public class LocalJoglTest extends ApplicationAdapter {
 		camera.update();
 
 		
-		FloatArray polygon = new FloatArray(coords);
+		polygon = new FloatArray(coords);
 		triangles = new EarClippingTriangulator().computeTriangles(polygon);
 	}
 

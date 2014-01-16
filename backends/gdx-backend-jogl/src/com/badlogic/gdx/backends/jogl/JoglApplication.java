@@ -236,7 +236,8 @@ public class JoglApplication implements Application {
 				listener.dispose();
 			}
 		}
-		audio.dispose();
+		if(audio!=null)
+			audio.dispose();
 		postRunnable(new Runnable() {
 			@Override
 			public void run () {

@@ -16,7 +16,19 @@
 
 package com.badlogic.gdx.tests.jogl;
 
+import com.badlogic.gdx.LifecycleListener;
+import com.badlogic.gdx.Preferences;
+import com.badlogic.gdx.backends.jogl.JoglApplication;
+import com.badlogic.gdx.backends.jogl.JoglApplicationConfiguration;
+import com.badlogic.gdx.backends.jogl.JoglFiles;
+import com.badlogic.gdx.backends.jogl.JoglPreferences;
+import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.tests.utils.GdxTest;
+import com.badlogic.gdx.tests.utils.GdxTests;
+import com.badlogic.gdx.utils.GdxRuntimeException;
+
 import java.awt.BorderLayout;
+import java.awt.EventQueue;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -34,18 +46,9 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 
-import com.badlogic.gdx.Preferences;
-import com.badlogic.gdx.backends.jogl.JoglApplication;
-import com.badlogic.gdx.backends.jogl.JoglApplicationConfiguration;
-import com.badlogic.gdx.backends.jogl.JoglFiles;
-import com.badlogic.gdx.backends.jogl.JoglPreferences;
-import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.tests.utils.GdxTest;
-import com.badlogic.gdx.tests.utils.GdxTests;
-
 public class JoglTestStarter extends JFrame {
 	public JoglTestStarter () throws HeadlessException {
-		super("libgdx Tests");
+		super("JOGL libgdx Tests");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setContentPane(new TestList());
 		pack();
@@ -54,24 +57,19 @@ public class JoglTestStarter extends JFrame {
 		setVisible(true);
 	}
 
-	/**
-	 * Runs the {@link GdxTest} with the given name.
-	 * 
+	/** Runs the {@link GdxTest} with the given name.
 	 * @param testName the name of a test class
-	 * @return {@code true} if the test was found and run, {@code false} otherwise
-	 */
-	public static boolean runTest (String testName) {
-		GdxTest test = GdxTests.newTest(testName);
-		if (test == null) {
-			return false;
-		}
-		JoglApplicationConfiguration config = new JoglApplicationConfiguration();
+	 * @return {@code true} if the test was found and run, {@code false} otherwise */
+	public static JoglApplication runTest (String testName) {
+		final GdxTest test = GdxTests.newTest(testName);
+		if (test == null) throw new GdxRuntimeException("Test not found: " + testName);
+
+		final JoglApplicationConfiguration config = new JoglApplicationConfiguration();
 		config.width = 640;
 		config.height = 480;
 		config.title = testName;
 		config.useGL20 = test.needsGL20();
-		new JoglApplication(test, config);
-		return true;
+		return new JoglApplication(test, config);
 	}
 
 	class TestList extends JPanel {
@@ -101,7 +99,7 @@ public class JoglTestStarter extends JFrame {
 			});
 
 			final Preferences prefs = new JoglPreferences(new FileHandle(new JoglFiles().getExternalStoragePath()
-				+ ".prefs/Jogl-tests"));
+				+ ".prefs/jogl-tests"));
 			list.setSelectedValue(prefs.getString("last", null), true);
 
 			button.addActionListener(new ActionListener() {
@@ -110,33 +108,36 @@ public class JoglTestStarter extends JFrame {
 					String testName = (String)list.getSelectedValue();
 					prefs.putString("last", testName);
 					prefs.flush();
-					dispose();
-					runTest(testName);
+					JoglTestStarter.this.setVisible(false);
+					runTest(testName).addLifecycleListener(new LifecycleListener() {
+						public void resume () {
+						}
+
+						public void pause () {
+						}
+
+						public void dispose () {
+							JoglTestStarter.this.setVisible(true);
+						}
+					});
 				}
 			});
 
 			add(pane, BorderLayout.CENTER);
 			add(button, BorderLayout.SOUTH);
-
-			// GdxTest test = GdxTests.newTest("BitmapFontFlipTest");
-			// new JoglApplication(test, "Test", 480, 320, test.needsGL20());
 		}
 	}
 
-	/**
-	 * Runs a libgdx test.
+	/** Runs a libgdx test.
 	 * 
-	 * If no arguments are provided on the command line, shows a list of tests to choose from.
-	 * If an argument is present, the test with that name will immediately be run.
+	 * If no arguments are provided on the command line, shows a list of tests to choose from. If an argument is present, the test
+	 * with that name will immediately be run.
 	 * 
-	 * @param argv command line arguments
-	 */
+	 * @param argv command line arguments */
 	public static void main (String[] argv) throws Exception {
 		if (argv.length > 0) {
-			if (runTest(argv[0])) {
-				return;
-				// Otherwise, fall back to showing the list
-			}
+			runTest(argv[0]);
+			return;
 		}
 		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		new JoglTestStarter();
