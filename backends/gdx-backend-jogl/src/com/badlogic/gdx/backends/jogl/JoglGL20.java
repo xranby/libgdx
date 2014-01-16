@@ -246,7 +246,11 @@ final class JoglGL20 implements GL20 {
 
 	@Override
 	public void glDrawElements (int mode, int count, int type, Buffer indices) {
-		GLContext.getCurrentGL().getGL2ES1().glDrawElements(mode, count, type, indices);
+		if(GLContext.getCurrentGL().isGLES2()) {
+			GLContext.getCurrentGL().getGLES2().glDrawElements(mode, count, type, indices);
+		} else {
+			GLContext.getCurrentGL().getGL2().glDrawElements(mode, count, type, indices);
+		}
 	}
 
 	@Override
@@ -564,7 +568,6 @@ final class JoglGL20 implements GL20 {
 	@Override
 	public void glShaderSource (int shader, String string) {
 		GLContext.getCurrentGL().getGL2ES2().glShaderSource(shader, 1, new String[] {string}, null, 0);
-
 	}
 
 	@Override
@@ -776,7 +779,11 @@ final class JoglGL20 implements GL20 {
 
 	@Override
 	public void glVertexAttribPointer (int indx, int size, int type, boolean normalized, int stride, Buffer ptr) {
-		GLContext.getCurrentGL().getGL2().glVertexAttribPointer(indx, size, type, normalized, stride, ptr);
+		if(GLContext.getCurrentGL().isGLES2()) {
+			GLContext.getCurrentGL().getGLES2().glVertexAttribPointer(indx, size, type, normalized, stride, ptr);
+		} else { 
+			GLContext.getCurrentGL().getGL2().glVertexAttribPointer(indx, size, type, normalized, stride, ptr);
+		}
 	}
 
 	@Override
