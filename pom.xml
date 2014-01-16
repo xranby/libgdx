@@ -46,12 +46,15 @@
     <gwt.version>2.5.0</gwt.version>
     <lwjgl.version>2.9.0</lwjgl.version>
     <robovm.version>0.0.6</robovm.version>
+    <jogamp.version>2.1.4-rc-20140113</jogamp.version>
   </properties>
 
   <modules>
     <module>extensions/gdx-jnigen</module>
     <module>gdx</module>
     <module>gdx/jni/maven</module>
+    <module>backends/gdx-joal</module>
+    <module>backends/gdx-backend-jogl</module>
     <module>backends/gdx-openal</module>
     <module>backends/gdx-backend-android</module>
     <module>backends/gdx-backend-robovm</module>
@@ -128,4 +131,21 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>jogamp-test</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <repositories>
+        <repository>
+          <id>jogamp-remote</id>
+          <name>jogamp test mirror</name>
+          <url>http://www.jogamp.org/deployment/maven/</url>
+          <layout>default</layout>
+        </repository>
+      </repositories>
+    </profile>
+  </profiles>
 </project>
