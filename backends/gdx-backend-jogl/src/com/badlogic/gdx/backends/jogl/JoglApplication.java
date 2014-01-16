@@ -106,8 +106,8 @@ public class JoglApplication implements Application {
 	}
 
 	WindowAdapter windowListener = new WindowAdapter() {
-		public void windowDestroyed(WindowEvent e) {
-            audio.dispose();
+		public void windowDestroyed(WindowEvent e) {            
+			end();
 		}
 	};
 	
@@ -227,9 +227,16 @@ public class JoglApplication implements Application {
 	public void setLogLevel (int logLevel) {
 		this.logLevel = logLevel;
 	}
-
-	@Override
-	public void exit () {
+	
+	/** Called when the game loop has exited. */
+	protected void end () {
+		synchronized (lifecycleListeners) {
+			for (LifecycleListener listener : lifecycleListeners) {
+				listener.pause();
+				listener.dispose();
+			}
+		}
+		audio.dispose();
 		postRunnable(new Runnable() {
 			@Override
 			public void run () {
@@ -237,6 +244,11 @@ public class JoglApplication implements Application {
 				graphics.canvas.destroy();
 			}
 		});
+	}
+
+	@Override
+	public void exit () {
+		end();
 	}
 
 	@Override
