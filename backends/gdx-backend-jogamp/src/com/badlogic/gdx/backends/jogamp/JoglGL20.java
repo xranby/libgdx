@@ -23,7 +23,6 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import com.jogamp.common.nio.Buffers;
-import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GLContext;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.utils.GdxRuntimeException;
@@ -32,7 +31,7 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
  * compatible. Some glGetXXX methods are not implemented.
  * 
  * @author mzechner */
-final class JoglGL20 implements GL20 {
+class JoglGL20 implements GL20 {
 
 	public JoglGL20 () {
 	}
@@ -803,115 +802,106 @@ final class JoglGL20 implements GL20 {
 
 	@Override
 	public void glDeleteTexture(int texture) {
-		GLContext.getCurrentGL().getGL2ES2().glDeleteTextures(1, Buffers.newDirectIntBuffer(new int[]{texture}));
+		GLContext.getCurrentGL().glDeleteTextures(1, Buffers.newDirectIntBuffer(new int[]{texture}));
 	}
 
 	@Override
 	public int glGenTexture() {
-		// TODO Auto-generated method stub
-		return 0;
+		final IntBuffer buffer = Buffers.newDirectIntBuffer(1);
+		GLContext.getCurrentGL().glGenTextures(1, buffer);
+		return buffer.get(0);
 	}
 
 	@Override
 	public void glDeleteBuffer(int buffer) {
-		// TODO Auto-generated method stub
-		
+		GLContext.getCurrentGL().glDeleteBuffers(1, Buffers.newDirectIntBuffer(new int[]{buffer}));
 	}
 
 	@Override
 	public void glDeleteFramebuffer(int framebuffer) {
-		// TODO Auto-generated method stub
-		
+		GLContext.getCurrentGL().glDeleteFramebuffers(1, Buffers.newDirectIntBuffer(new int[]{framebuffer}));
 	}
 
 	@Override
 	public void glDeleteRenderbuffer(int renderbuffer) {
-		// TODO Auto-generated method stub
-		
+		GLContext.getCurrentGL().glDeleteRenderbuffers(1, Buffers.newDirectIntBuffer(new int[]{renderbuffer}));
 	}
 
 	@Override
 	public int glGenBuffer() {
-		// TODO Auto-generated method stub
-		return 0;
+		final IntBuffer buffer = Buffers.newDirectIntBuffer(1);
+		GLContext.getCurrentGL().glGenBuffers(1, buffer);
+		return buffer.get(0);
 	}
 
 	@Override
 	public int glGenFramebuffer() {
-		// TODO Auto-generated method stub
-		return 0;
+		final IntBuffer buffer = Buffers.newDirectIntBuffer(1);
+		GLContext.getCurrentGL().glGenFramebuffers(1, buffer);
+		return buffer.get(0);
 	}
 
 	@Override
 	public int glGenRenderbuffer() {
-		// TODO Auto-generated method stub
-		return 0;
+		final IntBuffer buffer = Buffers.newDirectIntBuffer(1);
+		GLContext.getCurrentGL().glGenRenderbuffers(1, buffer);
+		return buffer.get(0);
 	}
 
 	@Override
 	public void glUniform1fv(int location, int count, float[] v, int offset) {
-		// TODO Auto-generated method stub
-		
+		GLContext.getCurrentGL().getGL2ES2().glUniform1fv(location, count, v, offset);
 	}
 
 	@Override
 	public void glUniform1iv(int location, int count, int[] v, int offset) {
-		// TODO Auto-generated method stub
-		
+		GLContext.getCurrentGL().getGL2ES2().glUniform1iv(location, count, v, offset);
 	}
 
 	@Override
 	public void glUniform2fv(int location, int count, float[] v, int offset) {
-		// TODO Auto-generated method stub
-		
+		GLContext.getCurrentGL().getGL2ES2().glUniform2fv(location, count, v, offset);
 	}
 
 	@Override
 	public void glUniform2iv(int location, int count, int[] v, int offset) {
-		// TODO Auto-generated method stub
-		
+		GLContext.getCurrentGL().getGL2ES2().glUniform2iv(location, count, v, offset);
 	}
 
 	@Override
 	public void glUniform3fv(int location, int count, float[] v, int offset) {
-		// TODO Auto-generated method stub
-		
+		GLContext.getCurrentGL().getGL2ES2().glUniform3fv(location, count, v, offset);		
 	}
 
 	@Override
 	public void glUniform3iv(int location, int count, int[] v, int offset) {
-		// TODO Auto-generated method stub
-		
+		GLContext.getCurrentGL().getGL2ES2().glUniform3iv(location, count, v, offset);
 	}
 
 	@Override
 	public void glUniform4fv(int location, int count, float[] v, int offset) {
-		// TODO Auto-generated method stub
-		
+		GLContext.getCurrentGL().getGL2ES2().glUniform4fv(location, count, v, offset);
 	}
 
 	@Override
 	public void glUniform4iv(int location, int count, int[] v, int offset) {
-		// TODO Auto-generated method stub
-		
+		GLContext.getCurrentGL().getGL2ES2().glUniform4iv(location, count, v, offset);		
 	}
 
 	@Override
 	public void glUniformMatrix2fv(int location, int count, boolean transpose, float[] value, int offset) {
-		// TODO Auto-generated method stub
-		
+		GLContext.getCurrentGL().getGL2ES2().glUniformMatrix2fv(location, count, transpose, value, offset);
 	}
 
 	@Override
 	public void glUniformMatrix3fv(int location, int count, boolean transpose, float[] value, int offset) {
-		// TODO Auto-generated method stub
+		GLContext.getCurrentGL().getGL2ES2().glUniformMatrix3fv(location, count, transpose, value, offset);
 		
 	}
 
 	@Override
 	public void glUniformMatrix4fv(int location, int count, boolean transpose, float[] value, int offset) {
-		// TODO Auto-generated method stub
-		
+		GLContext.getCurrentGL().getGL2ES2().glUniformMatrix4fv(location, count, transpose, value, offset);
 	}
 
 }
