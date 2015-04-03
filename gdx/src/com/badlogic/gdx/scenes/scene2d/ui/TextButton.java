@@ -20,10 +20,8 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
-import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
-
-import com.esotericsoftware.tablelayout.Cell;
+import com.badlogic.gdx.utils.Align;
 
 /** A button with a child {@link Label} to display text.
  * @author Nathan Sweet */
@@ -52,6 +50,9 @@ public class TextButton extends Button {
 	}
 
 	public void setStyle (ButtonStyle style) {
+		if (style == null) {
+			throw new NullPointerException("style cannot be null");
+		}
 		if (!(style instanceof TextButtonStyle)) throw new IllegalArgumentException("style must be a TextButtonStyle.");
 		super.setStyle(style);
 		this.style = (TextButtonStyle)style;
@@ -70,7 +71,7 @@ public class TextButton extends Button {
 
 	public void draw (Batch batch, float parentAlpha) {
 		Color fontColor;
-		if (isDisabled && style.disabledFontColor != null)
+		if (isDisabled() && style.disabledFontColor != null)
 			fontColor = style.disabledFontColor;
 		else if (isPressed() && style.downFontColor != null)
 			fontColor = style.downFontColor;
@@ -98,6 +99,10 @@ public class TextButton extends Button {
 
 	public CharSequence getText () {
 		return label.getText();
+	}
+
+	public String toString () {
+		return super.toString() + ": " + label.getText();
 	}
 
 	/** The style for a text button, see {@link TextButton}.

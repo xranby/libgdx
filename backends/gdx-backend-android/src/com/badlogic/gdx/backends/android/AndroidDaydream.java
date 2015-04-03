@@ -19,16 +19,21 @@ package com.badlogic.gdx.backends.android;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
+import javax.microedition.khronos.opengles.GL10;
+import javax.microedition.khronos.opengles.GL11;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
-import android.os.Bundle;
+import android.opengl.GLSurfaceView;
 import android.os.Debug;
 import android.os.Handler;
+import android.os.Looper;
 import android.service.dreams.DreamService;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
@@ -43,25 +48,21 @@ import com.badlogic.gdx.LifecycleListener;
 import com.badlogic.gdx.Net;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.backends.android.surfaceview.FillResolutionStrategy;
-import com.badlogic.gdx.backends.android.surfaceview.GLSurfaceViewAPI18;
-import com.badlogic.gdx.backends.android.surfaceview.GLSurfaceViewCupcake;
-import com.badlogic.gdx.graphics.GL10;
-import com.badlogic.gdx.graphics.GL11;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Clipboard;
 import com.badlogic.gdx.utils.GdxNativesLoader;
 
 /** An implementation of the {@link Application} interface for Android. Create an {@link Activity} that derives from this class. In
- * the Activity#onCreate(Bundle) method call the {@link #initialize(ApplicationListener, boolean)} method specifying the
- * configuration for the GLSurfaceView.
+ * the Activity#onCreate(Bundle) method call the {@link #initialize(ApplicationListener)} method specifying the configuration for
+ * the {@link GLSurfaceView}.
  * 
  * @author mzechner */
-public class AndroidDaydream extends DreamService implements Application {
+public class AndroidDaydream extends DreamService implements AndroidApplicationBase {
 	static {
 		GdxNativesLoader.load();
 	}
 
-	protected AndroidGraphicsDaydream graphics;
+	protected AndroidGraphics graphics;
 	protected AndroidInput input;
 	protected AndroidAudio audio;
 	protected AndroidFiles files;
@@ -75,38 +76,78 @@ public class AndroidDaydream extends DreamService implements Application {
 	protected int logLevel = LOG_INFO;
 
 	/** This method has to be called in the Activity#onCreate(Bundle) method. It sets up all the things necessary to get input,
-	 * render via OpenGL and so on. If useGL20IfAvailable is set the AndroidApplication will try to create an OpenGL ES 2.0 context
-	 * which can then be used via {@link Graphics#getGL20()}. The {@link GL10} and {@link GL11} interfaces should not be used when
-	 * OpenGL ES 2.0 is enabled. To query whether enabling OpenGL ES 2.0 was successful use the {@link Graphics#isGL20Available()}
-	 * method. Uses a default {@link AndroidApplicationConfiguration}.
-	 * 
-	 * @param listener the {@link ApplicationListener} implementing the program logic
-	 * @param useGL2IfAvailable whether to use OpenGL ES 2.0 if its available. */
-	public void initialize (ApplicationListener listener, boolean useGL2IfAvailable) {
+	 * render via OpenGL and so on. Uses a default {@link AndroidApplicationConfiguration}.
+	 * @param listener the {@link ApplicationListener} implementing the program logic */
+	public void initialize (ApplicationListener listener) {
 		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
-		config.useGL20 = useGL2IfAvailable;
 		initialize(listener, config);
 	}
 
 	/** This method has to be called in the Activity#onCreate(Bundle) method. It sets up all the things necessary to get input,
-	 * render via OpenGL and so on. If config.useGL20 is set the AndroidApplication will try to create an OpenGL ES 2.0 context
-	 * which can then be used via {@link Graphics#getGL20()}. The {@link GL10} and {@link GL11} interfaces should not be used when
-	 * OpenGL ES 2.0 is enabled. To query whether enabling OpenGL ES 2.0 was successful use the {@link Graphics#isGL20Available()}
-	 * method. You can configure other aspects of the application with the rest of the fields in the
+	 * render via OpenGL and so on. You can configure other aspects of the application with the rest of the fields in the
 	 * {@link AndroidApplicationConfiguration} instance.
-	 * 
 	 * @param listener the {@link ApplicationListener} implementing the program logic
 	 * @param config the {@link AndroidApplicationConfiguration}, defining various settings of the application (use accelerometer,
 	 *           etc.). */
 	public void initialize (ApplicationListener listener, AndroidApplicationConfiguration config) {
-		graphics = new AndroidGraphicsDaydream(this, config, config.resolutionStrategy == null ? new FillResolutionStrategy()
+		init(listener, config, false);
+	}
+
+	/** This method has to be called in the Activity#onCreate(Bundle) method. It sets up all the things necessary to get input,
+	 * render via OpenGL and so on. Uses a default {@link AndroidApplicationConfiguration}.
+	 * <p>
+	 * Note: you have to add the returned view to your layout!
+	 * @param listener the {@link ApplicationListener} implementing the program logic
+	 * @return the {@link GLSurfaceView} of the application */
+	public View initializeForView (ApplicationListener listener) {
+		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
+		return initializeForView(listener, config);
+	}
+
+	/** This method has to be called in the Activity#onCreate(Bundle) method. It sets up all the things necessary to get input,
+	 * render via OpenGL and so on. You can configure other aspects of the application with the rest of the fields in the
+	 * {@link AndroidApplicationConfiguration} instance.
+	 * <p>
+	 * Note: you have to add the returned view to your layout!
+	 * @param listener the {@link ApplicationListener} implementing the program logic
+	 * @param config the {@link AndroidApplicationConfiguration}, defining various settings of the application (use accelerometer,
+	 *           etc.).
+	 * @return the {@link GLSurfaceView} of the application */
+	public View initializeForView (ApplicationListener listener, AndroidApplicationConfiguration config) {
+		init(listener, config, true);
+		return graphics.getView();
+	}
+
+	private void init (ApplicationListener listener, AndroidApplicationConfiguration config, boolean isForView) {
+		graphics = new AndroidGraphics(this, config, config.resolutionStrategy == null ? new FillResolutionStrategy()
 			: config.resolutionStrategy);
 		input = AndroidInputFactory.newAndroidInput(this, this, graphics.view, config);
 		audio = new AndroidAudio(this, config);
+		this.getFilesDir(); // workaround for Android bug #10515463
 		files = new AndroidFiles(this.getAssets(), this.getFilesDir().getAbsolutePath());
-		net = new AndroidNet(null);
+		net = new AndroidNet(this);
 		this.listener = listener;
 		this.handler = new Handler();
+
+		// Add a specialized audio lifecycle listener
+		addLifecycleListener(new LifecycleListener() {
+
+			@Override
+			public void resume () {
+				audio.resume();
+			}
+			
+			@Override
+			public void pause () {
+				audio.pause();
+			}
+			
+			@Override
+			public void dispose () {
+				audio.dispose();
+				audio = null;
+			}
+		});
 
 		Gdx.app = this;
 		Gdx.input = this.getInput();
@@ -115,16 +156,18 @@ public class AndroidDaydream extends DreamService implements Application {
 		Gdx.graphics = this.getGraphics();
 		Gdx.net = this.getNet();
 
-		setFullscreen(true);
+		if (!isForView) {
+			setFullscreen(true);
+			setContentView(graphics.getView(), createLayoutParams());
+		}
 
-		setContentView(graphics.getView(), createLayoutParams());
 		createWakeLock(config.useWakelock);
 		hideStatusBar(config);
 	}
 
 	protected FrameLayout.LayoutParams createLayoutParams () {
-		FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(android.view.ViewGroup.LayoutParams.FILL_PARENT,
-			android.view.ViewGroup.LayoutParams.FILL_PARENT);
+		FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+			android.view.ViewGroup.LayoutParams.MATCH_PARENT);
 		layoutParams.gravity = Gravity.CENTER;
 		return layoutParams;
 	}
@@ -149,58 +192,6 @@ public class AndroidDaydream extends DreamService implements Application {
 		}
 	}
 
-	/** This method has to be called in the Activity#onCreate(Bundle) method. It sets up all the things necessary to get input,
-	 * render via OpenGL and so on. If useGL20IfAvailable is set the AndroidApplication will try to create an OpenGL ES 2.0 context
-	 * which can then be used via {@link Graphics#getGL20()}. The {@link GL10} and {@link GL11} interfaces should not be used when
-	 * OpenGL ES 2.0 is enabled. To query whether enabling OpenGL ES 2.0 was successful use the {@link Graphics#isGL20Available()}
-	 * method. Uses a default {@link AndroidApplicationConfiguration}.
-	 * <p/>
-	 * Note: you have to add the returned view to your layout!
-	 * 
-	 * @param listener the {@link ApplicationListener} implementing the program logic
-	 * @param useGL2IfAvailable whether to use OpenGL ES 2.0 if its available.
-	 * @return the GLSurfaceView of the application */
-	public View initializeForView (ApplicationListener listener, boolean useGL2IfAvailable) {
-		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
-		config.useGL20 = useGL2IfAvailable;
-		return initializeForView(listener, config);
-	}
-
-	/** This method has to be called in the Activity#onCreate(Bundle) method. It sets up all the things necessary to get input,
-	 * render via OpenGL and so on. If config.useGL20 is set the AndroidApplication will try to create an OpenGL ES 2.0 context
-	 * which can then be used via {@link Graphics#getGL20()}. The {@link GL10} and {@link GL11} interfaces should not be used when
-	 * OpenGL ES 2.0 is enabled. To query whether enabling OpenGL ES 2.0 was successful use the {@link Graphics#isGL20Available()}
-	 * method. You can configure other aspects of the application with the rest of the fields in the
-	 * {@link AndroidApplicationConfiguration} instance.
-	 * <p/>
-	 * Note: you have to add the returned view to your layout!
-	 * 
-	 * @param listener the {@link ApplicationListener} implementing the program logic
-	 * @param config the {@link AndroidApplicationConfiguration}, defining various settings of the application (use accelerometer,
-	 *           etc.).
-	 * @return the GLSurfaceView of the application */
-	public View initializeForView (ApplicationListener listener, AndroidApplicationConfiguration config) {
-		graphics = new AndroidGraphicsDaydream(this, config, config.resolutionStrategy == null ? new FillResolutionStrategy()
-			: config.resolutionStrategy);
-		input = AndroidInputFactory.newAndroidInput(this, this, graphics.view, config);
-		audio = new AndroidAudio(this, config);
-		files = new AndroidFiles(this.getAssets(), this.getFilesDir().getAbsolutePath());
-		net = new AndroidNet(null);
-		this.listener = listener;
-		this.handler = new Handler();
-
-		Gdx.app = this;
-		Gdx.input = this.getInput();
-		Gdx.audio = this.getAudio();
-		Gdx.files = this.getFiles();
-		Gdx.graphics = this.getGraphics();
-		Gdx.net = this.getNet();
-
-		createWakeLock(config.useWakelock);
-		hideStatusBar(config);
-		return graphics.getView();
-	}
-
 	@Override
 	public void onDreamingStopped () {
 		boolean isContinuous = graphics.isContinuousRendering();
@@ -219,11 +210,7 @@ public class AndroidDaydream extends DreamService implements Application {
 		graphics.destroy();
 		graphics.setContinuousRendering(isContinuous);
 
-		if (graphics != null && graphics.view != null) {
-			if (graphics.view instanceof GLSurfaceViewCupcake) ((GLSurfaceViewCupcake)graphics.view).onPause();
-			if (graphics.view instanceof GLSurfaceViewAPI18) ((GLSurfaceViewAPI18)graphics.view).onPause();
-			if (graphics.view instanceof android.opengl.GLSurfaceView) ((android.opengl.GLSurfaceView)graphics.view).onPause();
-		}
+		graphics.onPauseGLSurfaceView();
 
 		super.onDreamingStopped();
 	}
@@ -237,12 +224,10 @@ public class AndroidDaydream extends DreamService implements Application {
 		Gdx.graphics = this.getGraphics();
 		Gdx.net = this.getNet();
 
-		((AndroidInput)getInput()).registerSensorListeners();
+		getInput().registerSensorListeners();
 
-		if (graphics != null && graphics.view != null) {
-			if (graphics.view instanceof GLSurfaceViewCupcake) ((GLSurfaceViewCupcake)graphics.view).onResume();
-			if (graphics.view instanceof GLSurfaceViewAPI18) ((GLSurfaceViewAPI18)graphics.view).onResume();
-			if (graphics.view instanceof android.opengl.GLSurfaceView) ((android.opengl.GLSurfaceView)graphics.view).onResume();
+		if (graphics != null) {
+			graphics.onResumeGLSurfaceView();
 		}
 
 		if (!firstResume) {
@@ -278,7 +263,7 @@ public class AndroidDaydream extends DreamService implements Application {
 	}
 
 	@Override
-	public Input getInput () {
+	public AndroidInput getInput () {
 		return input;
 	}
 
@@ -294,7 +279,7 @@ public class AndroidDaydream extends DreamService implements Application {
 
 	@Override
 	public int getVersion () {
-		return Integer.parseInt(android.os.Build.VERSION.SDK);
+		return android.os.Build.VERSION.SDK_INT;
 	}
 
 	@Override
@@ -404,5 +389,53 @@ public class AndroidDaydream extends DreamService implements Application {
 		synchronized (lifecycleListeners) {
 			lifecycleListeners.removeValue(listener, true);
 		}
+	}
+
+	@Override
+	public Context getContext () {
+		return this;
+	}
+
+	@Override
+	public Array<Runnable> getRunnables () {
+		return runnables;
+	}
+
+	@Override
+	public Array<Runnable> getExecutedRunnables () {
+		return executedRunnables;
+	}
+
+	@Override
+	public Array<LifecycleListener> getLifecycleListeners () {
+		return lifecycleListeners;
+	}
+
+	@Override
+	public Window getApplicationWindow () {
+		return this.getWindow();
+	}
+
+	@Override
+	public Handler getHandler () {
+		return this.handler;
+	}
+
+	@Override
+	public void runOnUiThread (Runnable runnable) {
+		if (Looper.myLooper() != Looper.getMainLooper()) {
+			// The current thread is not the UI thread.
+			// Let's post the runnable to the event queue of the UI thread.
+			new Handler(Looper.getMainLooper()).post(runnable);
+		} else {
+			// The current thread is the UI thread already.
+			// Let's execute the runnable immediately.
+			runnable.run();
+		}
+	}
+
+	@Override
+	public void useImmersiveMode (boolean b) {
+		throw new UnsupportedOperationException();
 	}
 }

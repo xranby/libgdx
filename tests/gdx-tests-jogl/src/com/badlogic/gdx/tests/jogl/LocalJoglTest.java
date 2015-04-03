@@ -21,8 +21,8 @@ import java.util.List;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.backends.jogl.JoglApplication;
-import com.badlogic.gdx.graphics.GL10;
+import com.badlogic.gdx.backends.jogamp.JoglApplication;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
@@ -52,8 +52,8 @@ public class LocalJoglTest extends ApplicationAdapter {
 
 	@Override
 	public void render () {
-		Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
-		Gdx.gl10.glColor4f(1, 1, 1, 1);
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		//Gdx.gl20.glColor4f(1, 1, 1, 1);
 
 		renderer.setProjectionMatrix(camera.combined);
 		renderer.setColor(1, 1, 1, 1);
@@ -82,6 +82,6 @@ public class LocalJoglTest extends ApplicationAdapter {
 	}
 
 	public static void main (String[] argv) {
-		new JoglApplication(new LocalJoglTest(), "test", 480, 320, false);
+		new JoglApplication(new LocalJoglTest(), "test", 480, 320);
 	}
 }

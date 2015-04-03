@@ -33,6 +33,7 @@ import com.badlogic.gdx.Net.HttpRequest;
 import com.badlogic.gdx.Net.HttpResponse;
 import com.badlogic.gdx.Net.HttpResponseListener;
 import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.StreamUtils;
 
 /** Implements part of the {@link Net} API using {@link HttpURLConnection}, to be easily reused between the Android and Desktop
@@ -41,7 +42,7 @@ import com.badlogic.gdx.utils.StreamUtils;
 public class NetJavaImpl {
 
 	static class HttpClientResponse implements HttpResponse {
-		private HttpURLConnection connection;
+		private final HttpURLConnection connection;
 		private HttpStatus status;
 
 		public HttpClientResponse (HttpURLConnection connection) throws IOException {
@@ -68,6 +69,12 @@ public class NetJavaImpl {
 		@Override
 		public String getResultAsString () {
 			InputStream input = getInputStream();
+
+			// If the response does not contain any content, input will be null.
+			if (input == null) {
+				return "";
+			}
+
 			try {
 				return StreamUtils.copyStreamToString(input, connection.getContentLength());
 			} catch (IOException e) {
@@ -107,9 +114,13 @@ public class NetJavaImpl {
 	}
 
 	private final ExecutorService executorService;
+	final ObjectMap<HttpRequest, HttpURLConnection> connections;
+	final ObjectMap<HttpRequest, HttpResponseListener> listeners;
 
 	public NetJavaImpl () {
 		executorService = Executors.newCachedThreadPool();
+		connections = new ObjectMap<HttpRequest, HttpURLConnection>();
+		listeners = new ObjectMap<HttpRequest, HttpResponseListener>();
 	}
 
 	public void sendHttpRequest (final HttpRequest httpRequest, final HttpResponseListener httpResponseListener) {
@@ -137,6 +148,9 @@ public class NetJavaImpl {
 			connection.setDoOutput(doingOutPut);
 			connection.setDoInput(true);
 			connection.setRequestMethod(method);
+			HttpURLConnection.setFollowRedirects(httpRequest.getFollowRedirects());
+
+			putIntoConnectionsAndListeners(httpRequest, httpResponseListener, connection);
 
 			// Headers get set regardless of the method
 			for (Map.Entry<String, String> header : httpRequest.getHeaders().entrySet())
@@ -178,20 +192,57 @@ public class NetJavaImpl {
 
 						final HttpClientResponse clientResponse = new HttpClientResponse(connection);
 						try {
-							httpResponseListener.handleHttpResponse(clientResponse);
+							HttpResponseListener listener = getFromListeners(httpRequest);
+
+							if (listener != null) {
+								listener.handleHttpResponse(clientResponse);
+							}
+							removeFromConnectionsAndListeners(httpRequest);
 						} finally {
 							connection.disconnect();
 						}
 					} catch (final Exception e) {
 						connection.disconnect();
-						httpResponseListener.failed(e);
+						try {
+							httpResponseListener.failed(e);
+						} finally {
+							removeFromConnectionsAndListeners(httpRequest);
+						}
 					}
 				}
 			});
-
 		} catch (Exception e) {
-			httpResponseListener.failed(e);
+			try {
+				httpResponseListener.failed(e);
+			} finally {
+				removeFromConnectionsAndListeners(httpRequest);
+			}
 			return;
 		}
+	}
+
+	public void cancelHttpRequest (HttpRequest httpRequest) {
+		HttpResponseListener httpResponseListener = getFromListeners(httpRequest);
+
+		if (httpResponseListener != null) {
+			httpResponseListener.cancelled();
+			removeFromConnectionsAndListeners(httpRequest);
+		}
+	}
+
+	synchronized void removeFromConnectionsAndListeners (final HttpRequest httpRequest) {
+		connections.remove(httpRequest);
+		listeners.remove(httpRequest);
+	}
+
+	synchronized void putIntoConnectionsAndListeners (final HttpRequest httpRequest,
+		final HttpResponseListener httpResponseListener, final HttpURLConnection connection) {
+		connections.put(httpRequest, connection);
+		listeners.put(httpRequest, httpResponseListener);
+	}
+
+	synchronized HttpResponseListener getFromListeners (HttpRequest httpRequest) {
+		HttpResponseListener httpResponseListener = listeners.get(httpRequest);
+		return httpResponseListener;
 	}
 }

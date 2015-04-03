@@ -16,29 +16,16 @@
 
 package com.badlogic.gdx.tools.particleeditor;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.EventQueue;
-import java.awt.Graphics;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.border.CompoundBorder;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
@@ -49,7 +36,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.backends.lwjgl.LwjglCanvas;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.GL10;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -63,7 +50,10 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
 public class ParticleEditor extends JFrame {
-	public static final String DEFAULT_PARTICLE = "particle.png"; 
+	public static final String DEFAULT_PARTICLE = "particle.png";
+
+	public static final String DEFAULT_PREMULT_PARTICLE = "pre_particle.png";
+
 	LwjglCanvas lwjglCanvas;
 	JPanel rowsPanel;
 	JPanel editRowsPanel;
@@ -80,12 +70,13 @@ public class ParticleEditor extends JFrame {
 	float zoomLevelPrev;
 
 	ParticleEffect effect = new ParticleEffect();
+	File effectFile;
 	final HashMap<ParticleEmitter, ParticleData> particleData = new HashMap();
 
 	public ParticleEditor () {
 		super("Particle Editor");
 
-		lwjglCanvas = new LwjglCanvas(new Renderer(), false);
+		lwjglCanvas = new LwjglCanvas(new Renderer());
 		addWindowListener(new WindowAdapter() {
 			public void windowClosed (WindowEvent event) {
 				System.exit(0);
@@ -314,8 +305,6 @@ public class ParticleEditor extends JFrame {
 		public void create () {
 			if (spriteBatch != null) return;
 
-			Texture.setEnforcePotImages(false);
-
 			spriteBatch = new SpriteBatch();
 
 			worldCamera = new OrthographicCamera();
@@ -328,13 +317,13 @@ public class ParticleEditor extends JFrame {
 			zoomLevel = new NumericValue();
 			zoomLevel.setValue(1.0f);
 			zoomLevel.setAlwaysActive(true);
-			
+
 			deltaMultiplier = new NumericValue();
 			deltaMultiplier.setValue(1.0f);
 			deltaMultiplier.setAlwaysActive(true);
 
 			backgroundColor = new GradientColorValue();
-			backgroundColor.setColors(new float[] { 0f, 0f, 0f});
+			backgroundColor.setColors(new float[] {0f, 0f, 0f});
 
 			font = new BitmapFont(Gdx.files.getFileHandle("default.fnt", FileType.Internal), Gdx.files.getFileHandle("default.png",
 				FileType.Internal), true);
@@ -367,7 +356,7 @@ public class ParticleEditor extends JFrame {
 
 			float[] colors = backgroundColor.getColors();
 			Gdx.gl.glClearColor(colors[0], colors[1], colors[2], 1.0f);
-			Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
+			Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 			if ((pixelsPerMeter.getValue() != pixelsPerMeterPrev) || (zoomLevel.getValue() != zoomLevelPrev)) {
 				if (pixelsPerMeter.getValue() <= 0) {
@@ -381,12 +370,12 @@ public class ParticleEditor extends JFrame {
 				zoomLevelPrev = zoomLevel.getValue();
 				pixelsPerMeterPrev = pixelsPerMeter.getValue();
 			}
-			
+
 			spriteBatch.setProjectionMatrix(worldCamera.combined);
 
 			spriteBatch.begin();
 			spriteBatch.enableBlending();
-			spriteBatch.setBlendFunction(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
+			spriteBatch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
 			if (bgImage != null) {
 				bgImage.setPosition(viewWidth / 2 - bgImage.getWidth() / 2, viewHeight / 2 - bgImage.getHeight() / 2);
@@ -437,11 +426,24 @@ public class ParticleEditor extends JFrame {
 			String imageName = new File(imagePath.replace('\\', '/')).getName();
 			try {
 				FileHandle file;
-				if (imagePath.equals(ParticleEditor.DEFAULT_PARTICLE))
+				if (imagePath.equals(ParticleEditor.DEFAULT_PARTICLE) || imagePath.equals(ParticleEditor.DEFAULT_PREMULT_PARTICLE)) {
 					file = Gdx.files.classpath(imagePath);
-				else
-					file = Gdx.files.absolute(imagePath);
+				} else {
+					if ((imagePath.contains("/") || imagePath.contains("\\")) && !imageName.contains("..")) {
+						file = Gdx.files.absolute(imagePath);
+						if (!file.exists()) {
+							// try to use image in effect directory
+							file = Gdx.files.absolute(new File(effectFile.getParentFile(), imageName).getAbsolutePath());
+						}
+					} else {
+						file = Gdx.files.absolute(new File(effectFile.getParentFile(), imagePath).getAbsolutePath());
+					}
+				}
 				emitter.setSprite(new Sprite(new Texture(file)));
+				if (effectFile != null) {
+					URI relativeUri = effectFile.getParentFile().toURI().relativize(file.file().toURI());
+					emitter.setImagePath(relativeUri.getPath());
+				}
 			} catch (GdxRuntimeException ex) {
 				ex.printStackTrace();
 				EventQueue.invokeLater(new Runnable() {

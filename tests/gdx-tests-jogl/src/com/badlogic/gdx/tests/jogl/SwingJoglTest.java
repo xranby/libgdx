@@ -24,12 +24,11 @@ import javax.swing.SwingUtilities;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.backends.jogl.JoglAWTCanvas;
-import com.badlogic.gdx.graphics.GL10;
+import com.badlogic.gdx.backends.jogamp.JoglAWTCanvas;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.tests.MusicTest;
-import com.badlogic.gdx.tests.ObjTest;
 import com.badlogic.gdx.tests.UITest;
 
 /** Demonstrates how to use LwjglAWTCanvas to have multiple GL widgets in a Swing application.
@@ -41,9 +40,9 @@ public class SwingJoglTest extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		Container container = getContentPane();
-		canvas1 = new JoglAWTCanvas(new MusicTest(), "", 200, 480, false);
-		JoglAWTCanvas canvas2 = new JoglAWTCanvas(new UITest(), "", 200, 480, false, canvas1);
-		JoglAWTCanvas canvas3 = new JoglAWTCanvas(new WindowCreator(), "", 200, 480, false, canvas1);
+		canvas1 = new JoglAWTCanvas(new MusicTest(), "", 200, 480);
+		JoglAWTCanvas canvas2 = new JoglAWTCanvas(new UITest(), "", 200, 480, canvas1);
+		JoglAWTCanvas canvas3 = new JoglAWTCanvas(new WindowCreator(), "", 200, 480, canvas1);
 
 		/*canvas1.getCanvas().setSize(200, 480);
 		canvas2.getCanvas().setSize(200, 480);
@@ -70,7 +69,7 @@ public class SwingJoglTest extends JFrame {
 
 		@Override
 		public void render () {
-			Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
+			Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 			batch.begin();
 			font.draw(batch, "Click to create a new window", 10, 100);
 			batch.end();
@@ -82,7 +81,7 @@ public class SwingJoglTest extends JFrame {
 
 		private void createWindow () {
 			JFrame window = new JFrame();
-			JoglAWTCanvas canvas = new JoglAWTCanvas(new ObjTest(), "", 200, 200, false, canvas1);
+			JoglAWTCanvas canvas = new JoglAWTCanvas(new UITest(), "", 200, 200, canvas1);
 			window.getContentPane().add(canvas.getCanvas(), BorderLayout.CENTER);
 			window.pack();
 			window.setVisible(true);

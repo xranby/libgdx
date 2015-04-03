@@ -16,8 +16,8 @@
 
 package com.badlogic.gdx.tests.jogl;
 
-import com.badlogic.gdx.backends.jogl.JoglApplication;
-import com.badlogic.gdx.backends.jogl.JoglApplicationConfiguration;
+import com.badlogic.gdx.backends.jogamp.JoglApplication;
+import com.badlogic.gdx.backends.jogamp.JoglApplicationConfiguration;
 import com.badlogic.gdx.tests.superkoalio.SuperKoalio;
 import com.badlogic.gdx.tests.utils.GdxTest;
 import com.badlogic.gdx.utils.SharedLibraryLoader;
@@ -35,7 +35,6 @@ public class JoglDebugStarter {
 		GdxTest test = new SuperKoalio();
 		JoglApplicationConfiguration config = new JoglApplicationConfiguration();
 		config.vSyncEnabled = true;
-		config.useGL20 = test.needsGL20();
 		new JoglApplication(test, config);
 	}
 }

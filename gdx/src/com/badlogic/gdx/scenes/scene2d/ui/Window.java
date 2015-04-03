@@ -16,19 +16,21 @@
 
 package com.badlogic.gdx.scenes.scene2d.ui;
 
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
 import com.badlogic.gdx.graphics.g2d.BitmapFontCache;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
-import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.utils.Align;
 
 /** A table that can be dragged and act as a modal window. The top padding is used as the window's title height.
  * <p>
@@ -187,7 +189,7 @@ public class Window extends Table {
 		this.style = style;
 		setBackground(style.background);
 		titleCache = new BitmapFontCache(style.titleFont);
-		titleCache.setColor(style.titleFontColor);
+		titleCache.getColor().set(style.titleFontColor);
 		if (title != null) setTitle(title);
 		invalidateHierarchy();
 	}
@@ -201,7 +203,20 @@ public class Window extends Table {
 	void keepWithinStage () {
 		if (!keepWithinStage) return;
 		Stage stage = getStage();
-		if (getParent() == stage.getRoot()) {
+		Camera camera = stage.getCamera();
+		if (camera instanceof OrthographicCamera) {
+			OrthographicCamera orthographicCamera = (OrthographicCamera) camera;
+			float parentWidth = stage.getWidth();
+			float parentHeight = stage.getHeight();
+			if (getX(Align.right) - camera.position.x > parentWidth / 2 / orthographicCamera.zoom)
+				setPosition(camera.position.x + parentWidth / 2 / orthographicCamera.zoom, getY(Align.right), Align.right);
+			if (getX(Align.left) - camera.position.x < -parentWidth / 2 / orthographicCamera.zoom)
+				setPosition(camera.position.x - parentWidth / 2 / orthographicCamera.zoom, getY(Align.left), Align.left);
+			if (getY(Align.top) - camera.position.y > parentHeight / 2 / orthographicCamera.zoom)
+				setPosition(getX(Align.top), camera.position.y + parentHeight / 2 / orthographicCamera.zoom, Align.top);
+			if (getY(Align.bottom) - camera.position.y < -parentHeight / 2 / orthographicCamera.zoom)
+				setPosition(getX(Align.bottom), camera.position.y - parentHeight / 2 / orthographicCamera.zoom, Align.bottom);
+		} else if (getParent() == stage.getRoot()) {
 			float parentWidth = stage.getWidth();
 			float parentHeight = stage.getHeight();
 			if (getX() < 0) setX(0);
@@ -212,50 +227,55 @@ public class Window extends Table {
 	}
 
 	public void draw (Batch batch, float parentAlpha) {
+		Stage stage = getStage();
+		if (stage.getKeyboardFocus() == null) stage.setKeyboardFocus(this);
+
 		keepWithinStage();
+
+		if (style.stageBackground != null) {
+			stageToLocalCoordinates(tmpPosition.set(0, 0));
+			stageToLocalCoordinates(tmpSize.set(stage.getWidth(), stage.getHeight()));
+			drawStageBackground(batch, parentAlpha, getX() + tmpPosition.x, getY() + tmpPosition.y, getX() + tmpSize.x, getY()
+				+ tmpSize.y);
+		}
+
 		super.draw(batch, parentAlpha);
 	}
 
-	protected void drawBackground (Batch batch, float parentAlpha) {
-		float x = getX(), y = getY();
+	protected void drawStageBackground (Batch batch, float parentAlpha, float x, float y, float width, float height) {
+		Color color = getColor();
+		batch.setColor(color.r, color.g, color.b, color.a * parentAlpha);
+		style.stageBackground.draw(batch, x, y, width, height);
+	}
+
+	protected void drawBackground (Batch batch, float parentAlpha, float x, float y) {
 		float width = getWidth(), height = getHeight();
 		float padTop = getPadTop();
 
-		if (style.stageBackground != null) {
-			Color color = getColor();
-			batch.setColor(color.r, color.g, color.b, color.a * parentAlpha);
-			Stage stage = getStage();
-			stageToLocalCoordinates(/* in/out */tmpPosition.set(0, 0));
-			stageToLocalCoordinates(/* in/out */tmpSize.set(stage.getWidth(), stage.getHeight()));
-			style.stageBackground.draw(batch, x + tmpPosition.x, y + tmpPosition.y, x + tmpSize.x, y + tmpSize.y);
-		}
-
-		super.drawBackground(batch, parentAlpha);
+		super.drawBackground(batch, parentAlpha, x, y);
 
 		// Draw button table.
 		buttonTable.getColor().a = getColor().a;
 		buttonTable.pack();
 		buttonTable.setPosition(width - buttonTable.getWidth(), Math.min(height - padTop, height - buttonTable.getHeight()));
-		buttonTable.translate(x, y);
 		buttonTable.draw(batch, parentAlpha);
-		buttonTable.translate(-x, -y);
 
 		// Draw the title without the batch transformed or clipping applied.
 		y += height;
-		TextBounds bounds = titleCache.getBounds();
+		GlyphLayout layout = titleCache.getLayouts().first();
 		if ((titleAlignment & Align.left) != 0)
 			x += getPadLeft();
 		else if ((titleAlignment & Align.right) != 0)
-			x += width - bounds.width - getPadRight();
+			x += width - layout.width - getPadRight();
 		else
-			x += (width - bounds.width) / 2;
+			x += (width - layout.width) / 2;
 		if ((titleAlignment & Align.top) == 0) {
 			if ((titleAlignment & Align.bottom) != 0)
-				y -= padTop - bounds.height;
+				y -= padTop - layout.height;
 			else
-				y -= (padTop - bounds.height) / 2;
+				y -= (padTop - layout.height) / 2;
 		}
-		titleCache.setColors(Color.tmp.set(getColor()).mul(style.titleFontColor));
+		titleCache.tint(Color.tmp.set(getColor()).mul(style.titleFontColor));
 		titleCache.setPosition((int)x, (int)y);
 		titleCache.draw(batch, parentAlpha);
 	}
@@ -263,12 +283,21 @@ public class Window extends Table {
 	public Actor hit (float x, float y, boolean touchable) {
 		Actor hit = super.hit(x, y, touchable);
 		if (hit == null && isModal && (!touchable || getTouchable() == Touchable.enabled)) return this;
+		float height = getHeight();
+		if (hit == null || hit == this) return hit;
+		if (y <= height && y >= height - getPadTop() && x >= 0 && x <= getWidth()) {
+			// Hit the title bar, don't use the hit child if it is in the Window's table.
+			Actor current = hit;
+			while (current.getParent() != this)
+				current = current.getParent();
+			if (getCell(current) != null) return this;
+		}
 		return hit;
 	}
 
 	public void setTitle (String title) {
 		this.title = title;
-		titleCache.setMultiLineText(title, 0, 0);
+		titleCache.setText(title, 0, 0);
 	}
 
 	public String getTitle () {
@@ -317,7 +346,7 @@ public class Window extends Table {
 	}
 
 	public float getTitleWidth () {
-		return titleCache.getBounds().width;
+		return titleCache.getLayouts().first().width;
 	}
 
 	public float getPrefWidth () {

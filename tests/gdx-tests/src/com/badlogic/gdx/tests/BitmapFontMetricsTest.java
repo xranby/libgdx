@@ -18,10 +18,9 @@ package com.badlogic.gdx.tests;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL10;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.BitmapFont.HAlignment;
-import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -51,7 +50,7 @@ public class BitmapFontMetricsTest extends GdxTest {
 		int viewHeight = Gdx.graphics.getHeight();
 
 		Gdx.gl.glClearColor(1, 1, 1, 1);
-		Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		spriteBatch.begin();
 
 		// String text = "Sphinx of black quartz, judge my vow.";
@@ -79,7 +78,7 @@ public class BitmapFontMetricsTest extends GdxTest {
 		smallFont.draw(spriteBatch, "cap height", 20, viewHeight - 140);
 
 		font.setColor(Color.BLACK);
-		TextBounds bounds = font.drawMultiLine(spriteBatch, text, x, y);
+		GlyphLayout layout = font.draw(spriteBatch, text, x, y);
 
 		spriteBatch.end();
 
@@ -106,12 +105,8 @@ public class BitmapFontMetricsTest extends GdxTest {
 
 		renderer.begin(ShapeType.Line);
 		renderer.setColor(Color.BLUE);
-		renderer.rect(x, y, bounds.width, -bounds.height);
+		renderer.rect(x, y, layout.width, -layout.height);
 		renderer.end();
-	}
-
-	public boolean needsGL20 () {
-		return false;
 	}
 
 	@Override

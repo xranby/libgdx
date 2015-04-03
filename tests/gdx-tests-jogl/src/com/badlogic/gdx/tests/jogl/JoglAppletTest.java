@@ -16,18 +16,17 @@
 
 package com.badlogic.gdx.tests.jogl;
 
-import com.badlogic.gdx.backends.jogl.JoglApplet;
-import com.badlogic.gdx.backends.jogl.JoglApplicationConfiguration;
-import com.badlogic.gdx.tests.Pong;
+import com.badlogic.gdx.backends.jogamp.JoglApplet;
+import com.badlogic.gdx.backends.jogamp.JoglApplicationConfiguration;
+import com.badlogic.gdx.tests.AnimationTest;
 
 public class JoglAppletTest extends JoglApplet {
 	public JoglAppletTest () {
-		super(new Pong(), createConfig());
+		super(new AnimationTest(), createConfig());
 	}
 	
 	private static JoglApplicationConfiguration createConfig() {
 		JoglApplicationConfiguration config = new JoglApplicationConfiguration();
-		config.useGL20 = false;
 		return(config);
 	}
 }

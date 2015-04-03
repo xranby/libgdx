@@ -34,12 +34,12 @@ public final class ClassReflection {
 
 	/** Returns the simple name of the underlying class as supplied in the source code. */
 	static public String getSimpleName (Class c) {
-		return c.getName();
+		return c.getSimpleName();
 	}
 
 	/** Determines if the supplied Object is assignment-compatible with the object represented by supplied Class. */
 	static public boolean isInstance (Class c, Object obj) {
-		return isAssignableFrom(c, obj.getClass());
+		return obj != null && isAssignableFrom(c, obj.getClass());
 	}
 
 	/** Determines if the class or interface represented by first Class parameter is either the same as, or is a superclass or
@@ -60,6 +60,11 @@ public final class ClassReflection {
 		return ReflectionCache.getType(c).isStatic();
 	}
 
+	/** Determines if the supplied Class object represents an array class. */
+	static public boolean isArray (Class c) {
+		return ReflectionCache.getType(c).isArray();
+	}
+	
 	/** Creates a new instance of the class represented by the supplied Class. */
 	static public <T> T newInstance (Class<T> c) throws ReflectionException {
 		try {
@@ -184,4 +189,38 @@ public final class ClassReflection {
 		}
 	}
 
+	/** Returns true if the supplied class includes an annotation of the given class type. */
+	static public boolean isAnnotationPresent (Class c, Class<? extends java.lang.annotation.Annotation> annotationType) {
+		java.lang.annotation.Annotation[] annotations = ReflectionCache.getType(c).getDeclaredAnnotations();
+		for (java.lang.annotation.Annotation annotation : annotations) {
+			if (annotation.annotationType().equals(annotationType)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** Returns an array of {@link Annotation} objects reflecting all annotations declared by the supplied class,
+	 * or an empty array if there are none. Does not include inherited annotations. */
+	static public Annotation[] getDeclaredAnnotations (Class c) {
+		java.lang.annotation.Annotation[] annotations = ReflectionCache.getType(c).getDeclaredAnnotations();
+		Annotation[] result = new Annotation[annotations.length];
+		for (int i = 0; i < annotations.length; i++) {
+			result[i] = new Annotation(annotations[i]);
+		}
+		return result;
+	}
+
+	/** Returns an {@link Annotation} object reflecting the annotation provided, or null of this field doesn't
+	 * have such an annotation. This is a convenience function if the caller knows already which annotation
+	 * type he's looking for. */
+	static public Annotation getDeclaredAnnotation (Class c, Class<? extends java.lang.annotation.Annotation> annotationType) {
+		java.lang.annotation.Annotation[] annotations = ReflectionCache.getType(c).getDeclaredAnnotations();
+		for (java.lang.annotation.Annotation annotation : annotations) {
+			if (annotation.annotationType().equals(annotationType)) {
+				return new Annotation(annotation);
+			}
+		}
+		return null;
+	}
 }

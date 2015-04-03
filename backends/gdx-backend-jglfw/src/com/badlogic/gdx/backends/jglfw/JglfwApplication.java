@@ -60,19 +60,18 @@ public class JglfwApplication implements Application {
 	private int foregroundFPS, backgroundFPS, hiddenFPS;
 
 	public JglfwApplication (ApplicationListener listener) {
-		this(listener, listener.getClass().getSimpleName(), 640, 480, false);
+		this(listener, listener.getClass().getSimpleName(), 640, 480);
 	}
 
-	public JglfwApplication (ApplicationListener listener, String title, int width, int height, boolean useGL2) {
-		this(listener, createConfig(title, width, height, useGL2));
+	public JglfwApplication (ApplicationListener listener, String title, int width, int height) {
+		this(listener, createConfig(title, width, height));
 	}
 
-	static private JglfwApplicationConfiguration createConfig (String title, int width, int height, boolean useGL2) {
+	static private JglfwApplicationConfiguration createConfig (String title, int width, int height) {
 		JglfwApplicationConfiguration config = new JglfwApplicationConfiguration();
 		config.title = title;
 		config.width = width;
 		config.height = height;
-		config.useGL20 = useGL2;
 		return config;
 	}
 
@@ -204,11 +203,14 @@ public class JglfwApplication implements Application {
 	protected void frame () {
 		if (!running) return;
 
-		if (executeRunnables()) graphics.requestRendering();
+		boolean shouldRender = false;
+
+		if (executeRunnables()) shouldRender = true;
 
 		if (!running) return;
 
 		input.update();
+		shouldRender |= graphics.shouldRender();
 
 		long frameStartTime = System.nanoTime();
 		int targetFPS = (graphics.isHidden() || graphics.isMinimized()) ? hiddenFPS : //
@@ -220,7 +222,10 @@ public class JglfwApplication implements Application {
 		} else {
 			if (isPaused) listener.resume();
 			isPaused = false;
-			if (graphics.shouldRender()) render(frameStartTime);
+			if (shouldRender)
+				render(frameStartTime);
+			else
+				targetFPS = backgroundFPS;
 		}
 
 		if (targetFPS != 0) {
@@ -233,13 +238,14 @@ public class JglfwApplication implements Application {
 
 	public boolean executeRunnables () {
 		synchronized (runnables) {
-			executedRunnables.addAll(runnables);
+			for (int i = runnables.size - 1; i >= 0; i--)
+				executedRunnables.add(runnables.get(i));
 			runnables.clear();
 		}
 		if (executedRunnables.size == 0) return false;
-		for (int i = 0; i < executedRunnables.size; i++)
-			executedRunnables.get(i).run();
-		executedRunnables.clear();
+		do
+			executedRunnables.pop().run();
+		while (executedRunnables.size > 0);
 		return true;
 	}
 

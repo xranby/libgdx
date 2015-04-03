@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>gdx-tests-jogl</name>
+	<name>gdx-tests-jogamp</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -18,7 +18,13 @@
 		<link>
 			<name>tests-assets</name>
 			<type>2</type>
-			<locationURI>PARENT-1-PROJECT_LOC/gdx-tests-android/assets</locationURI>
+			<locationURI>copy_PARENT/gdx-tests-android/assets</locationURI>
 		</link>
 	</linkedResources>
+	<variableList>
+		<variable>
+			<name>copy_PARENT</name>
+			<value>$%7BPARENT-1-PROJECT_LOC%7D/libgdx/tests</value>
+		</variable>
+	</variableList>
 </projectDescription>

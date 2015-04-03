@@ -94,6 +94,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.tools.hiero.unicodefont.UnicodeFont;
 import com.badlogic.gdx.tools.hiero.unicodefont.effects.EffectUtil;
+import com.badlogic.gdx.utils.Align;
 
 import de.matthiasmann.twlthemeeditor.fontgen.CharSet;
 import de.matthiasmann.twlthemeeditor.fontgen.Effect;
@@ -165,7 +166,7 @@ public class Hiero4 extends JFrame {
 		initialize();
 		splash.close();
 
-		gamePanel.add(new LwjglCanvas(renderer = new Renderer(), false).getCanvas());
+		gamePanel.add(new LwjglCanvas(renderer = new Renderer()).getCanvas());
 
 		prefs = Preferences.userNodeForPackage(Hiero4.class);
 		java.awt.Color backgroundColor = EffectUtil.fromString(prefs.get("background", "000000"));
@@ -331,7 +332,7 @@ public class Hiero4 extends JFrame {
 							}
 
 							@Override
-							public void consumeCompressedData (int target) {
+							public void consumeCustomData (int target) {
 							}
 
 							@Override
@@ -986,7 +987,7 @@ public class Hiero4 extends JFrame {
 				GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
 
 				batch.begin();
-				font.drawWrapped(batch, sampleTextPane.getText(), 0, viewHeight, viewWidth);
+				font.draw(batch, sampleTextPane.getText(), 0, viewHeight, viewWidth, Align.left, true);
 				batch.end();
 			} else {
 				glClearColor(1, 1, 1, 1);

@@ -18,10 +18,10 @@ package com.badlogic.gdx.tests.jogl;
 
 import com.badlogic.gdx.LifecycleListener;
 import com.badlogic.gdx.Preferences;
-import com.badlogic.gdx.backends.jogl.JoglApplication;
-import com.badlogic.gdx.backends.jogl.JoglApplicationConfiguration;
-import com.badlogic.gdx.backends.jogl.JoglFiles;
-import com.badlogic.gdx.backends.jogl.JoglPreferences;
+import com.badlogic.gdx.backends.jogamp.JoglApplication;
+import com.badlogic.gdx.backends.jogamp.JoglApplicationConfiguration;
+import com.badlogic.gdx.backends.jogamp.JoglFiles;
+import com.badlogic.gdx.backends.jogamp.JoglPreferences;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.tests.utils.GdxTest;
 import com.badlogic.gdx.tests.utils.GdxTests;
@@ -68,7 +68,6 @@ public class JoglTestStarter extends JFrame {
 		config.width = 640;
 		config.height = 480;
 		config.title = testName;
-		config.useGL20 = test.needsGL20();
 		return new JoglApplication(test, config);
 	}
 
