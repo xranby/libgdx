@@ -40,7 +40,7 @@ public class OpenALAudio implements Audio {
 	static {
       ALut.alutInit();
    }
-	private IntBuffer ib = IntBuffer.allocate(1);
+	private IntBuffer ib = Buffers.newDirectIntBuffer(1);
 	private final int deviceBufferSize;
 	private final int deviceBufferCount;
 	private IntArray idleSources, allSources;
@@ -49,10 +49,11 @@ public class OpenALAudio implements Audio {
 	private long nextSoundId = 0;
 	private ObjectMap<String, Class<? extends OpenALSound>> extensionToSoundClass = new ObjectMap();
 	private ObjectMap<String, Class<? extends OpenALMusic>> extensionToMusicClass = new ObjectMap();
+	private OpenALSound[] recentSounds;
+	private int mostRecetSound = -1;
 
 	Array<OpenALMusic> music = new Array(false, 1, OpenALMusic.class);
 	boolean noDevice = false;
-	private ALC alc;
    private AL al;
 
 	public OpenALAudio () {
@@ -71,7 +72,7 @@ public class OpenALAudio implements Audio {
 		registerMusic("mp3", Mp3.Music.class);
 
 		try {
-			alc = ALFactory.getALC();
+	     ALFactory.getALC();
          al = ALFactory.getAL();
 		} catch (ALException ex) {
 			noDevice = true;
@@ -82,10 +83,13 @@ public class OpenALAudio implements Audio {
 		allSources = new IntArray(false, simultaneousSources);
 		IntBuffer channelsNioBuffer = Buffers.newDirectIntBuffer(simultaneousSources);
 		al.alGenSources(simultaneousSources, channelsNioBuffer);
-		for (int i = 0; i < simultaneousSources; i++) {
-			int sourceID = channelsNioBuffer.get(i);
-			if (sourceID == 0) break;
-			allSources.add(sourceID);
+		if (al.alGetError() != ALConstants.AL_NO_ERROR) {
+			for (int i = 0; i < simultaneousSources; i++) {
+				int sourceID = channelsNioBuffer.get(i);
+				if (sourceID == 0)
+					break;
+				allSources.add(sourceID);
+			}
 		}
 		idleSources = new IntArray(allSources);
 		soundIdToSource = new LongMap<Integer>();
@@ -98,6 +102,8 @@ public class OpenALAudio implements Audio {
 		al.alListenerfv(ALConstants.AL_VELOCITY, velocity);
 		FloatBuffer position = (FloatBuffer)Buffers.newDirectFloatBuffer(3).put(new float[] {0.0f, 0.0f, 0.0f}).flip();
 		al.alListenerfv(ALConstants.AL_POSITION, position);
+		
+		recentSounds = new OpenALSound[simultaneousSources];
 	}
 	
 	public AL getAL(){
@@ -118,7 +124,7 @@ public class OpenALAudio implements Audio {
 
 	public OpenALSound newSound (FileHandle file) {
 		if (file == null) throw new IllegalArgumentException("file cannot be null.");
-		Class<? extends OpenALSound> soundClass = extensionToSoundClass.get(file.extension());
+		Class<? extends OpenALSound> soundClass = extensionToSoundClass.get(file.extension().toLowerCase());
 		if (soundClass == null) throw new GdxRuntimeException("Unknown file extension for sound: " + file);
 		try {
 			return soundClass.getConstructor(new Class[] {OpenALAudio.class, FileHandle.class}).newInstance(this, file);
@@ -129,7 +135,7 @@ public class OpenALAudio implements Audio {
 
 	public OpenALMusic newMusic (FileHandle file) {
 		if (file == null) throw new IllegalArgumentException("file cannot be null.");
-		Class<? extends OpenALMusic> musicClass = extensionToMusicClass.get(file.extension());
+		Class<? extends OpenALMusic> musicClass = extensionToMusicClass.get(file.extension().toLowerCase());
 		if (musicClass == null) throw new GdxRuntimeException("Unknown file extension for music: " + file);
 		try {
 			return musicClass.getConstructor(new Class[] {OpenALAudio.class, FileHandle.class}).newInstance(this, file);
@@ -308,13 +314,7 @@ public class OpenALAudio implements Audio {
 		sourceToSoundId.clear();
 		soundIdToSource.clear();
 
-		//AL.destroy();
-		/*while (AL.isCreated()) {
-			try {
-				Thread.sleep(10);
-			} catch (InterruptedException e) {
-			}
-		}*/
+		//FIXME not sure that we have to do something to "destroy" AL 
 	}
 
 	public AudioDevice newAudioDevice (int sampleRate, final boolean isMono) {
@@ -359,5 +359,27 @@ public class OpenALAudio implements Audio {
 			}
 		};
 		return new JavaSoundAudioRecorder(samplingRate, isMono);
+	}
+
+	/** Retains a list of the most recently played sounds and stops the sound played least recently if necessary for a new sound to
+	 * play */
+	protected void retain (OpenALSound sound, boolean stop) {
+		// Move the pointer ahead and wrap
+		mostRecetSound++;
+		mostRecetSound %= recentSounds.length;
+
+		if (stop) {
+			// Stop the least recent sound (the one we are about to bump off the buffer)
+			if (recentSounds[mostRecetSound] != null) recentSounds[mostRecetSound].stop();
+		}
+
+		recentSounds[mostRecetSound] = sound;
+	}
+
+	/** Removes the disposed sound from the least recently played list */
+	public void forget (OpenALSound sound) {
+		for (int i = 0; i < recentSounds.length; i++) {
+			if (recentSounds[i] == sound) recentSounds[i] = null;
+		}
 	}
 }

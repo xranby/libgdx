@@ -19,11 +19,13 @@ package com.badlogic.gdx.backends.jogamp.audio;
 import java.io.ByteArrayOutputStream;
 
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.utils.StreamUtils;
 
 /** @author Nathan Sweet */
 public class Ogg {
 	static public class Music extends OpenALMusic {
 		private OggInputStream input;
+		private OggInputStream previousInput;
 
 		public Music (OpenALAudio audio, FileHandle file) {
 			super(audio, file);
@@ -34,28 +36,24 @@ public class Ogg {
 
 		public int read (byte[] buffer) {
 			if (input == null) {
-				input = new OggInputStream(file.read());
+				input = new OggInputStream(file.read(), previousInput);
 				setup(input.getChannels(), input.getSampleRate());
+				previousInput = null; // release this reference
 			}
 			return input.read(buffer);
 		}
 
 		public void reset () {
-			if (input == null) return;
-			input.close();
+			StreamUtils.closeQuietly(input);
+			previousInput = null;
 			input = null;
 		}
 
 		@Override
-		public float getVolume () {
-			// TODO Auto-generated method stub
-			return 1;
-		}
-
-		@Override
-		public void setPosition (float position) {
-			// TODO Auto-generated method stub
-			
+		protected void loop () {
+			StreamUtils.closeQuietly(input);
+			previousInput = input;
+			input = null;
 		}
 	}
 
@@ -63,15 +61,20 @@ public class Ogg {
 		public Sound (OpenALAudio audio, FileHandle file) {
 			super(audio);
 			if (audio.noDevice) return;
-			OggInputStream input = new OggInputStream(file.read());
-			ByteArrayOutputStream output = new ByteArrayOutputStream(4096);
-			byte[] buffer = new byte[2048];
-			while (!input.atEnd()) {
-				int length = input.read(buffer);
-				if (length == -1) break;
-				output.write(buffer, 0, length);
+			OggInputStream input = null;
+			try {
+				input = new OggInputStream(file.read());
+				ByteArrayOutputStream output = new ByteArrayOutputStream(4096);
+				byte[] buffer = new byte[2048];
+				while (!input.atEnd()) {
+					int length = input.read(buffer);
+					if (length == -1) break;
+					output.write(buffer, 0, length);
+				}
+				setup(output.toByteArray(), input.getChannels(), input.getSampleRate());
+			} finally {
+				StreamUtils.closeQuietly(input);
 			}
-			setup(output.toByteArray(), input.getChannels(), input.getSampleRate());
 		}
 	}
 }

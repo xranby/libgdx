@@ -22,7 +22,6 @@ import java.nio.IntBuffer;
 
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.openal.ALConstants;
-
 import com.badlogic.gdx.audio.AudioDevice;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.GdxRuntimeException;
@@ -32,8 +31,8 @@ public class OpenALAudioDevice implements AudioDevice {
 	static private final int bytesPerSample = 2;
 
 	private final OpenALAudio audio;
-	private IntBuffer ib = IntBuffer.allocate(1);
-	private FloatBuffer fb = FloatBuffer.allocate(1);
+	private IntBuffer ib = Buffers.newDirectIntBuffer(1);
+	private FloatBuffer fb = Buffers.newDirectFloatBuffer(1);
 	private final int channels;
 	private IntBuffer buffers;
 	private int sourceID = -1;
@@ -59,7 +58,8 @@ public class OpenALAudioDevice implements AudioDevice {
 
 	public void writeSamples (short[] samples, int offset, int numSamples) {
 		if (bytes == null || bytes.length < numSamples * 2) bytes = new byte[numSamples * 2];
-		for (int i = offset, ii = 0; i < numSamples; i++) {
+		int end = Math.min(offset + numSamples, samples.length);
+		for (int i = offset, ii = 0; i < end; i++) {
 			short sample = samples[i];
 			bytes[ii++] = (byte)(sample & 0xFF);
 			bytes[ii++] = (byte)((sample >> 8) & 0xFF);
@@ -69,7 +69,8 @@ public class OpenALAudioDevice implements AudioDevice {
 
 	public void writeSamples (float[] samples, int offset, int numSamples) {
 		if (bytes == null || bytes.length < numSamples * 2) bytes = new byte[numSamples * 2];
-		for (int i = offset, ii = 0; i < numSamples; i++) {
+		int end = Math.min(offset + numSamples, samples.length);
+		for (int i = offset, ii = 0; i < end; i++) {
 			float floatSample = samples[i];
 			floatSample = MathUtils.clamp(floatSample, -1f, 1f);
 			int intSample = (int)(floatSample * 32767);
@@ -133,7 +134,6 @@ public class OpenALAudioDevice implements AudioDevice {
 			audio.getAL().alGetSourcei(sourceID, ALConstants.AL_BUFFERS_PROCESSED, ib);
 			int buffers = ib.get(0);
 			while (buffers-- > 0) {
-				//FIXME
 				ib.put(0, buffers).rewind();
 				audio.getAL().alSourceUnqueueBuffers(sourceID, ib.limit(), ib);
 				int bufferID = ib.get(0);
@@ -181,6 +181,7 @@ public class OpenALAudioDevice implements AudioDevice {
 		return isPlaying;
 	}
 
+	@Override
 	public void setVolume (float volume) {
 		this.volume = volume;
 		if (sourceID != -1) audio.getAL().alSourcef(sourceID, ALConstants.AL_GAIN, volume);
@@ -204,6 +205,7 @@ public class OpenALAudioDevice implements AudioDevice {
 		return sampleRate;
 	}
 
+	@Override
 	public void dispose () {
 		if (buffers == null) return;
 		if (sourceID != -1) {
@@ -214,10 +216,12 @@ public class OpenALAudioDevice implements AudioDevice {
 		buffers = null;
 	}
 
+	@Override
 	public boolean isMono () {
 		return channels == 1;
 	}
 
+	@Override
 	public int getLatency () {
 		return (int)(secondsPerBuffer * bufferCount * 1000);
 	}

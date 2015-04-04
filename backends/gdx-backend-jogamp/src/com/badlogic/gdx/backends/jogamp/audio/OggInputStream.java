@@ -27,10 +27,9 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import com.jogamp.common.nio.Buffers;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.badlogic.gdx.utils.StreamUtils;
 import com.jcraft.jogg.Packet;
 import com.jcraft.jogg.Page;
 import com.jcraft.jogg.StreamState;
@@ -39,14 +38,17 @@ import com.jcraft.jorbis.Block;
 import com.jcraft.jorbis.Comment;
 import com.jcraft.jorbis.DspState;
 import com.jcraft.jorbis.Info;
+import com.jogamp.common.nio.Buffers;
 
 /** An input stream to read Ogg Vorbis.
  * @author kevin */
 public class OggInputStream extends InputStream {
+	private final static int BUFFER_SIZE = 512;
+	
 	/** The conversion buffer size */
-	private int convsize = 4096 * 4;
+	private int convsize = BUFFER_SIZE * 4;
 	/** The buffer used to read OGG file */
-	private byte[] convbuffer = new byte[convsize]; // take 8k out of the data segment, not the stack
+	private byte[] convbuffer;
 	/** The stream we're reading the OGG file from */
 	private InputStream input;
 	/** The audio information from the OGG header */
@@ -84,7 +86,7 @@ public class OggInputStream extends InputStream {
 	/** The index into the byte array we currently read from */
 	private int readIndex;
 	/** The byte array store used to hold the data read from the ogg */
-	private ByteBuffer pcmBuffer = Buffers.newDirectByteBuffer(4096 * 500);
+	private ByteBuffer pcmBuffer;
 	/** The total number of bytes */
 	private int total;
 
@@ -92,6 +94,24 @@ public class OggInputStream extends InputStream {
 	 * 
 	 * @param input The input stream from which to read the OGG file */
 	public OggInputStream (InputStream input) {
+		this(input, null);
+	}
+
+	/** Create a new stream to decode OGG data, reusing buffers from another stream.
+	 *
+	 * It's not a good idea to use the old stream instance afterwards.
+	 *
+	 * @param input The input stream from which to read the OGG file
+	 * @param previousStream The stream instance to reuse buffers from, may be null */
+	OggInputStream (InputStream input, OggInputStream previousStream) {
+		if (previousStream == null) {
+			convbuffer = new byte[convsize];
+			pcmBuffer = Buffers.newDirectByteBuffer(4096 * 500);
+		} else {
+			convbuffer = previousStream.convbuffer;
+			pcmBuffer = previousStream.pcmBuffer;
+		}
+
 		this.input = input;
 		try {
 			total = input.available();
@@ -117,7 +137,7 @@ public class OggInputStream extends InputStream {
 		return oggInfo.rate;
 	}
 
-	/** Initialize the streams and thread involved in the streaming of OGG data */
+	/** Initialise the streams and thread involved in the streaming of OGG data */
 	private void init () {
 		initVorbis();
 		readPCM();
@@ -143,7 +163,7 @@ public class OggInputStream extends InputStream {
 		// serialno.
 
 		// submit a 4k block to libvorbis' Ogg layer
-		int index = syncState.buffer(4096);
+		int index = syncState.buffer(BUFFER_SIZE);
 		if (index == -1) return false;
 
 		buffer = syncState.data;
@@ -153,7 +173,7 @@ public class OggInputStream extends InputStream {
 		}
 
 		try {
-			bytes = input.read(buffer, index, 4096);
+			bytes = input.read(buffer, index, BUFFER_SIZE);
 		} catch (Exception e) {
 			throw new GdxRuntimeException("Failure reading Vorbis.", e);
 		}
@@ -162,7 +182,7 @@ public class OggInputStream extends InputStream {
 		// Get the first page.
 		if (syncState.pageout(page) != 1) {
 			// have we simply run out of data? If so, we're done.
-			if (bytes < 4096) return false;
+			if (bytes < BUFFER_SIZE) return false;
 
 			// error case. Must not be Vorbis data
 			throw new GdxRuntimeException("Input does not appear to be an Ogg bitstream.");
@@ -234,11 +254,11 @@ public class OggInputStream extends InputStream {
 				}
 			}
 			// no harm in not checking before adding more
-			index = syncState.buffer(4096);
+			index = syncState.buffer(BUFFER_SIZE);
 			if (index == -1) return false;
 			buffer = syncState.data;
 			try {
-				bytes = input.read(buffer, index, 4096);
+				bytes = input.read(buffer, index, BUFFER_SIZE);
 			} catch (Exception e) {
 				throw new GdxRuntimeException("Failed to read Vorbis.", e);
 			}
@@ -248,7 +268,7 @@ public class OggInputStream extends InputStream {
 			syncState.wrote(bytes);
 		}
 
-		convsize = 4096 / oggInfo.channels;
+		convsize = BUFFER_SIZE / oggInfo.channels;
 
 		// OK, got and parsed all three headers. Initialize the Vorbis
 		// packet->PCM decoder.
@@ -348,8 +368,8 @@ public class OggInputStream extends InputStream {
 									}
 
 									int bytesToWrite = 2 * oggInfo.channels * bout;
-									if (bytesToWrite >= pcmBuffer.remaining()) {
-										throw new GdxRuntimeException("Ogg block too big to be buffered: " + bytesToWrite);
+									if (bytesToWrite > pcmBuffer.remaining()) {
+										throw new GdxRuntimeException("Ogg block too big to be buffered: " + bytesToWrite + " :: " + pcmBuffer.remaining());
 									} else {
 										pcmBuffer.put(convbuffer, 0, bytesToWrite);
 									}
@@ -373,11 +393,11 @@ public class OggInputStream extends InputStream {
 
 				if (!endOfBitStream) {
 					bytes = 0;
-					int index = syncState.buffer(4096);
+					int index = syncState.buffer(BUFFER_SIZE);
 					if (index >= 0) {
 						buffer = syncState.data;
 						try {
-							bytes = input.read(buffer, index, 4096);
+							bytes = input.read(buffer, index, BUFFER_SIZE);
 						} catch (Exception e) {
 							throw new GdxRuntimeException("Error during Vorbis decoding.", e);
 						}
@@ -453,5 +473,6 @@ public class OggInputStream extends InputStream {
 	}
 
 	public void close () {
+		StreamUtils.closeQuietly(input);
 	}
 }

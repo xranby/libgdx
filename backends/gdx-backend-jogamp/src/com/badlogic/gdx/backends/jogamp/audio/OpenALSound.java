@@ -20,13 +20,14 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 
+import com.jogamp.common.nio.Buffers;
 import com.jogamp.openal.*;
 import com.badlogic.gdx.audio.Sound;
 
 /** @author Nathan Sweet */
 public class OpenALSound implements Sound {
 	private int bufferID = -1;
-	private IntBuffer ib = IntBuffer.allocate(1);
+	private IntBuffer ib = Buffers.newDirectIntBuffer(1);
 	private final OpenALAudio audio;
 	private float duration;
 
@@ -58,6 +59,12 @@ public class OpenALSound implements Sound {
 	public long play (float volume) {
 		if (audio.noDevice) return 0;
 		int sourceID = audio.obtainSource(false);
+		if (sourceID == -1) {
+			// Attempt to recover by stopping the least recently played sound
+			audio.retain(this, true);
+			sourceID = audio.obtainSource(false);
+		} else audio.retain(this, false);
+		// In case it still didn't work
 		if (sourceID == -1) return -1;
 		long soundId = audio.getSoundId(sourceID);
 		audio.getAL().alSourcei(sourceID, ALConstants.AL_BUFFER, bufferID);
@@ -103,13 +110,13 @@ public class OpenALSound implements Sound {
 		if (audio.noDevice) return;
 		audio.stopSound(soundId);
 	}
-	
+
 	@Override
 	public void pause () {
 		if (audio.noDevice) return;
 		audio.pauseSourcesWithBuffer(bufferID);
 	}
-	
+
 	@Override
 	public void pause (long soundId) {
 		if (audio.noDevice) return;
@@ -121,7 +128,7 @@ public class OpenALSound implements Sound {
 		if (audio.noDevice) return;
 		audio.resumeSourcesWithBuffer(bufferID);
 	}
-	
+
 	@Override
 	public void resume (long soundId) {
 		if (audio.noDevice) return;
