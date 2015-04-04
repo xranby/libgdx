@@ -16,16 +16,16 @@
 
 package com.badlogic.gdx.backends.jogamp;
 
-import com.jogamp.nativewindow.NativeWindowFactory;
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLEventListener;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.GL30;
+import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.jogamp.newt.opengl.GLWindow;
 import com.jogamp.opengl.util.Animator;
 
@@ -40,26 +40,14 @@ public abstract class JoglGraphicsBase implements Graphics, GLEventListener {
 	int fps;
 	int frames;
 	boolean paused = true;
+	JoglApplicationConfiguration config;
 
 	GL20 gl20;
+	GL30 gl30;
 
 	void initialize (JoglApplicationConfiguration config) {
-		GLCapabilities caps;
-		// libgdx uses glDrawElements and glVertexAttribPointer passing buffers
-		// these functions are removed in OpenGL core only contexts.
-		// libgdx shaders are currently only GLES2 and GL2 compatible.
-		// try allocate an GLES2 or GL2 context first
-		// before picking a OpenGL core only GL2ES2 context.
-		caps = new GLCapabilities(GLProfile.get(GLProfile.GL2));
-		if (caps == null)
-			caps = new GLCapabilities(GLProfile.get(GLProfile.GLES2));
-		if (caps == null)
-			// glDrawElements and glVertexAttribPointer not supported by opengl
-			// context
-			// on this hardware.
-			// Get a GL2ES2 context instead (non backward compatible GL3, GL4 &
-			// GLES3 etc.. )
-			caps = new GLCapabilities(GLProfile.getGL2ES2());
+		this.config = config;
+		GLCapabilities caps = new GLCapabilities(GLProfile.getMaxProgrammable(true));
 		
 		caps.setRedBits(config.r);
 		caps.setGreenBits(config.g);
@@ -107,13 +95,32 @@ public abstract class JoglGraphicsBase implements Graphics, GLEventListener {
 	}
 
 	void initializeGLInstances (GLAutoDrawable drawable) {
-		String renderer = drawable.getGL().glGetString(GL.GL_RENDERER);
 		major = drawable.getGL().getContext().getGLVersionNumber().getMajor();
 		minor = drawable.getGL().getContext().getGLVersionNumber().getMinor();
 
-		gl20 = new JoglGL20();
+		if (config.useGL30 && major >= 3) {
+			gl30 = new JoglGL30();
+			gl20 = gl30;
+		} else {
+			gl20 = new JoglGL20();
+		}
 
+		if (major <= 1)
+			throw new GdxRuntimeException("OpenGL 2.0 or higher with the FBO extension is required. OpenGL version: " + major + "." + minor);
+		if (major == 2) {
+			if (!supportsExtension("GL_EXT_framebuffer_object") && !supportsExtension("GL_ARB_framebuffer_object")) {
+				final String vendor = drawable.getGL().glGetString(GL.GL_VENDOR);
+				final String renderer = drawable.getGL().glGetString(GL.GL_RENDERER);
+				final String version = drawable.getGL().glGetString(GL.GL_VERSION);
+				final String glInfo = vendor + "\n" + renderer + "\n" + version;
+				throw new GdxRuntimeException("OpenGL 2.0 or higher with the FBO extension is required. OpenGL version: " + major + "." + minor
+					+ ", FBO extension: false" + (glInfo.isEmpty() ? "" : ("\n" + glInfo)));
+			}
+		}
+
+		Gdx.gl = gl20;
 		Gdx.gl20 = gl20;
+		Gdx.gl30 = gl30;
 	}
 
 	void updateTimes () {
@@ -156,6 +163,11 @@ public abstract class JoglGraphicsBase implements Graphics, GLEventListener {
 	@Override
 	public GL20 getGL20 () {
 		return gl20;
+	}
+	
+	@Override
+	public GL30 getGL30 () {
+		return gl30;
 	}
 
 	@Override

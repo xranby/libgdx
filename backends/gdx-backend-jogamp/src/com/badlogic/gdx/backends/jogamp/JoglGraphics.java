@@ -38,7 +38,7 @@ import com.jogamp.newt.util.MonitorModeUtil;
 /** Implements the {@link Graphics} interface with Jogl.
  * 
  * @author mzechner */
-public class JoglGraphics extends JoglGraphicsBase implements GLEventListener {
+public class JoglGraphics extends JoglGraphicsBase {
 	ApplicationListener listener = null;
 	boolean created = false;
 	boolean exclusiveMode = false;
@@ -289,12 +289,6 @@ public class JoglGraphics extends JoglGraphicsBase implements GLEventListener {
 	public boolean isGL30Available() {
 		// TODO Auto-generated method stub
 		return false;
-	}
-
-	@Override
-	public GL30 getGL30() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override

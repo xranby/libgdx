@@ -28,6 +28,8 @@ public class JoglApplicationConfiguration {
 	 * natives are not needed. */
 	//FIXME not correctly handled
 	public static boolean disableAudio;
+	/** whether to attempt use OpenGL ES 3.0. **/
+	public boolean useGL30 = false;
 	/** number of bits per color channel **/
 	public int r = 8, g = 8, b = 8, a = 8;
 	/** number of bits for depth and stencil buffer **/
