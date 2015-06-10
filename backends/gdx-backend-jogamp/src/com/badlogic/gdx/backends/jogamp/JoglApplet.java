@@ -21,7 +21,6 @@ import java.awt.BorderLayout;
 import java.awt.Canvas;
 
 import com.badlogic.gdx.ApplicationListener;
-import com.badlogic.gdx.Application.ApplicationType;
 import com.jogamp.newt.awt.NewtCanvasAWT;
 
 public class JoglApplet  extends Applet {
@@ -51,6 +50,7 @@ public class JoglApplet  extends Applet {
 		canvas.requestFocus();
 	}
 
+	@Override
 	public void destroy () {
 		remove(canvas);
 		super.destroy();
