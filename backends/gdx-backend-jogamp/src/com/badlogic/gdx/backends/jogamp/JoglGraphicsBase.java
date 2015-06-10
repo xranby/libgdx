@@ -105,6 +105,10 @@ public abstract class JoglGraphicsBase implements Graphics, GLEventListener {
 			gl20 = new JoglGL20();
 		}
 
+		Gdx.gl = gl20;
+		Gdx.gl20 = gl20;
+		Gdx.gl30 = gl30;
+		
 		if (major <= 1)
 			throw new GdxRuntimeException("OpenGL 2.0 or higher with the FBO extension is required. OpenGL version: " + major + "." + minor);
 		if (major == 2) {
@@ -117,10 +121,6 @@ public abstract class JoglGraphicsBase implements Graphics, GLEventListener {
 					+ ", FBO extension: false" + (glInfo.isEmpty() ? "" : ("\n" + glInfo)));
 			}
 		}
-
-		Gdx.gl = gl20;
-		Gdx.gl20 = gl20;
-		Gdx.gl30 = gl30;
 	}
 
 	void updateTimes () {
