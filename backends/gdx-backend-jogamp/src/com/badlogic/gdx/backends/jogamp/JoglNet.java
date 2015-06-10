@@ -17,12 +17,8 @@
 package com.badlogic.gdx.backends.jogamp;
 
 import java.awt.Desktop;
-import java.net.URI;
 
 import com.badlogic.gdx.Net;
-import com.badlogic.gdx.Net.HttpRequest;
-import com.badlogic.gdx.Net.HttpResponseListener;
-import com.badlogic.gdx.Net.Protocol;
 import com.badlogic.gdx.net.NetJavaImpl;
 import com.badlogic.gdx.net.NetJavaServerSocketImpl;
 import com.badlogic.gdx.net.NetJavaSocketImpl;
@@ -44,6 +40,11 @@ public class JoglNet implements Net {
 	@Override
 	public void cancelHttpRequest (HttpRequest httpRequest) {
 		netJavaImpl.cancelHttpRequest(httpRequest);
+	}
+	
+	@Override
+	public ServerSocket newServerSocket (Protocol protocol, String ipAddress, int port, ServerSocketHints hints) {
+		return new NetJavaServerSocketImpl(protocol, ipAddress, port, hints);
 	}
 
 	@Override
