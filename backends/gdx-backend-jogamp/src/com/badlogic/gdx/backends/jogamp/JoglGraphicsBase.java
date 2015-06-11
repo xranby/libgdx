@@ -47,7 +47,31 @@ public abstract class JoglGraphicsBase implements Graphics, GLEventListener {
 
 	void initialize (JoglApplicationConfiguration config) {
 		this.config = config;
-		GLCapabilities caps = new GLCapabilities(GLProfile.getMaxProgrammable(true));
+
+		GLCapabilities caps;
+		if(config.useGL30){
+			caps = new GLCapabilities(GLProfile.getMaxProgrammable(true));
+		} else {
+			// GL20 uses glDrawElements and glVertexAttribPointer
+			// passing buffers, these functions are removed in
+			// OpenGL core only contexts.
+			// libgdx shaders are currently only GLES2 and GL2
+			// compatible.
+			// try allocate an GLES2 or GL2 context first
+			// before picking a OpenGL core only GL2ES2 context.
+			caps = new GLCapabilities(GLProfile.get(GLProfile.GL2));
+			if (caps == null)
+				caps = new GLCapabilities(GLProfile.get(GLProfile.GLES2));
+			if (caps == null) {
+				// glDrawElements and glVertexAttribPointer
+				// not supported by opengl context
+				// on this hardware.
+				// Get a GL2ES2 context instead
+				// (non backward compatible GL3, GL4 &
+				// GLES3 etc.. )
+				caps = new GLCapabilities(GLProfile.getGL2ES2());
+			}
+		}
 		
 		caps.setRedBits(config.r);
 		caps.setGreenBits(config.g);
