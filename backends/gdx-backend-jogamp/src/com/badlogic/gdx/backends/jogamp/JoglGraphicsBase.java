@@ -21,6 +21,7 @@ import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLEventListener;
+import com.jogamp.opengl.GLException;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.graphics.GL20;
@@ -47,7 +48,24 @@ public abstract class JoglGraphicsBase implements Graphics, GLEventListener {
 
 	void initialize (JoglApplicationConfiguration config) {
 		this.config = config;
-		GLCapabilities caps = new GLCapabilities(GLProfile.getMaxProgrammable(true));
+
+		GLCapabilities caps;
+		if(config.useGL30){
+			caps = new GLCapabilities(GLProfile.getMaxProgrammable(true));
+		} else {
+			// GL20 uses glDrawElements and glVertexAttribPointer
+			// passing buffers, these functions are removed in
+			// OpenGL core only contexts.
+			// libgdx shaders are currently only GLES2 and GL2
+			// compatible.
+			// try to allocate an GL2 or GLES2 context.
+			// core only contexts are not supported for GL20.
+			try {
+				caps = new GLCapabilities(GLProfile.get(GLProfile.GL2));
+			} catch (GLException e) {				
+				caps = new GLCapabilities(GLProfile.get(GLProfile.GLES2));
+			}
+		}
 		
 		caps.setRedBits(config.r);
 		caps.setGreenBits(config.g);
