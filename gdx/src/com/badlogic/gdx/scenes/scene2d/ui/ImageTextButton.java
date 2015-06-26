@@ -53,10 +53,11 @@ public class ImageTextButton extends Button {
 
 		image = new Image();
 		image.setScaling(Scaling.fit);
-		add(image);
 
 		label = new Label(text, new LabelStyle(style.font, style.fontColor));
 		label.setAlignment(Align.center);
+
+		add(image);
 		add(label);
 
 		setStyle(style);
