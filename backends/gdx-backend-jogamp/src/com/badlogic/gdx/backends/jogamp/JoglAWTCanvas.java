@@ -24,7 +24,12 @@ import com.badlogic.gdx.backends.jogamp.audio.OpenALAudio;
 import com.jogamp.newt.awt.NewtCanvasAWT;
 
 /** An OpenGL surface on a NEWT canvas linked to an AWT peer, allowing OpenGL to be embedded in a Swing application
- * @author Julien Gouesse */
+ * 
+ * TODO move it into JoglNewtAwtCanvas (use JoglNewtGraphics, JoglAwtCanvas will use JoglAwtGraphics instead)
+ * 
+ * @author Julien Gouesse 
+ * 
+ * */
 public class JoglAWTCanvas extends JoglApplication {
 	
 	private NewtCanvasAWT canvas;
