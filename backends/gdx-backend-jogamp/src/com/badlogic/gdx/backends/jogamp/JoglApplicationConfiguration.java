@@ -16,17 +16,13 @@
 
 package com.badlogic.gdx.backends.jogamp;
 
-import java.util.ArrayList;
-
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.Graphics.DisplayMode;
-import com.badlogic.gdx.backends.jogamp.JoglGraphics.JoglDisplayMode;
 
 public class JoglApplicationConfiguration {
 	/** If true, OpenAL will not be used. This means {@link Application#getAudio()} returns null and the gdx-joal.jar and OpenAL
 	 * natives are not needed. */
-	//FIXME not correctly handled
 	public static boolean disableAudio;
 	/** whether to attempt use OpenGL ES 3.0. **/
 	public boolean useGL30 = false;
