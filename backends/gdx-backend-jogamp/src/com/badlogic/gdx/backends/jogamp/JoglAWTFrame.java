@@ -6,12 +6,14 @@ import javax.swing.JFrame;
 
 import com.badlogic.gdx.ApplicationListener;
 
+@SuppressWarnings("unused")
 public class JoglAWTFrame extends JFrame {
 	
 	final JoglAWTCanvas joglAWTCanvas;
 
 	public JoglAWTFrame(ApplicationListener listener, String title, int width, int height) {
 		super(title);
+		
 		joglAWTCanvas = new JoglAWTCanvas(listener, title, width, height) {
 			protected void stopped () {
 				JoglAWTFrame.this.dispose();
