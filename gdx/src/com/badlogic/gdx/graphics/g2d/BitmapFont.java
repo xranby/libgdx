@@ -326,7 +326,7 @@ public class BitmapFont implements Disposable {
 		for (int index = 0, end = glyphs.length(); index < end; index++) {
 			Glyph g = data.getGlyph(glyphs.charAt(index));
 			if (g == null) continue;
-			g.xoffset += (maxAdvance - g.xadvance) / 2;
+			g.xoffset += Math.round((maxAdvance - g.xadvance) / 2);
 			g.xadvance = maxAdvance;
 			g.kerning = null;
 		}
@@ -615,7 +615,10 @@ public class BitmapFont implements Disposable {
 					spaceGlyph.xadvance = xadvanceGlyph.xadvance;
 					setGlyph(' ', spaceGlyph);
 				}
-				if (spaceGlyph.width == 0) spaceGlyph.width = (int)(spaceGlyph.xadvance + padRight);
+				if (spaceGlyph.width == 0) {
+					spaceGlyph.width = (int)(spaceGlyph.xadvance + padRight);
+					spaceGlyph.xoffset = (int)-padLeft;
+				}
 				spaceWidth = spaceGlyph.width;
 
 				Glyph xGlyph = null;
@@ -785,12 +788,12 @@ public class BitmapFont implements Disposable {
 		/** Returns the first valid glyph index to use to wrap to the next line, starting at the specified start index and
 		 * (typically) moving toward the beginning of the glyphs array. */
 		public int getWrapIndex (Array<Glyph> glyphs, int start) {
-			char ch = (char)glyphs.get(start).id;
-			if (isWhitespace(ch)) return start;
-			for (int i = start - 1; i >= 1; i--) {
-				ch = (char)glyphs.get(i).id;
-				if (isWhitespace(ch)) return i;
-				if (isBreakChar(ch)) return i + 1;
+			int i = start - 1;
+			for (; i >= 1; i--)
+				if (!isWhitespace((char)glyphs.get(i).id)) break;
+			for (; i >= 1; i--) {
+				char ch = (char)glyphs.get(i).id;
+				if (isWhitespace(ch) || isBreakChar(ch)) return i + 1;
 			}
 			return 0;
 		}

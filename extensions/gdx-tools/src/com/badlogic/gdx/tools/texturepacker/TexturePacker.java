@@ -16,16 +16,6 @@
 
 package com.badlogic.gdx.tools.texturepacker;
 
-import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.Pixmap.Format;
-import com.badlogic.gdx.graphics.Texture.TextureFilter;
-import com.badlogic.gdx.graphics.Texture.TextureWrap;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas.TextureAtlasData;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas.TextureAtlasData.Region;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.GdxRuntimeException;
-
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -42,6 +32,16 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
+
+import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.Pixmap.Format;
+import com.badlogic.gdx.graphics.Texture.TextureFilter;
+import com.badlogic.gdx.graphics.Texture.TextureWrap;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas.TextureAtlasData;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas.TextureAtlasData.Region;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.GdxRuntimeException;
 
 /** @author Nathan Sweet */
 public class TexturePacker {
@@ -304,9 +304,12 @@ public class TexturePacker {
 			writer.write("filter: " + settings.filterMin + "," + settings.filterMag + "\n");
 			writer.write("repeat: " + getRepeatValue() + "\n");
 
+			page.outputRects.sort();
 			for (Rect rect : page.outputRects) {
 				writeRect(writer, page, rect, rect.name);
-				for (Alias alias : rect.aliases) {
+				Array<Alias> aliases = new Array(rect.aliases.toArray());
+				aliases.sort();
+				for (Alias alias : aliases) {
 					Rect aliasRect = new Rect();
 					aliasRect.set(rect);
 					alias.apply(aliasRect);
@@ -368,7 +371,7 @@ public class TexturePacker {
 
 	/** @author Regnarock
 	 * @author Nathan Sweet */
-	static public class Alias {
+	static public class Alias implements Comparable<Alias> {
 		public String name;
 		public int index;
 		public int[] splits;
@@ -396,10 +399,14 @@ public class TexturePacker {
 			rect.originalWidth = originalWidth;
 			rect.originalHeight = originalHeight;
 		}
+
+		public int compareTo (Alias o) {
+			return name.compareTo(o.name);
+		}
 	}
 
 	/** @author Nathan Sweet */
-	static public class Rect {
+	static public class Rect implements Comparable<Rect> {
 		public String name;
 		public int offsetX, offsetY, regionWidth, regionHeight, originalWidth, originalHeight;
 		public int x, y;
@@ -484,6 +491,10 @@ public class TexturePacker {
 			score2 = rect.score2;
 			file = rect.file;
 			isPatch = rect.isPatch;
+		}
+
+		public int compareTo (Rect o) {
+			return name.compareTo(o.name);
 		}
 
 		@Override
@@ -661,7 +672,7 @@ public class TexturePacker {
 
 	static public void processIfModified (Settings settings, String input, String output, String packFileName) {
 		if (isModified(input, output, packFileName, settings)) {
-			 process(settings, input, output, packFileName);
+			process(settings, input, output, packFileName);
 		}
 	}
 
