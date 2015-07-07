@@ -20,127 +20,83 @@ import java.util.List;
 
 import com.jogamp.nativewindow.util.Dimension;
 import com.jogamp.nativewindow.util.DimensionImmutable;
-import com.jogamp.opengl.GLAutoDrawable;
-import com.jogamp.opengl.GLCapabilitiesImmutable;
-import com.jogamp.opengl.GLEventListener;
+import com.jogamp.opengl.GLCapabilities;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;
-import com.badlogic.gdx.backends.jogamp.audio.OpenALAudio;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.GL30;
-import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.jogamp.newt.MonitorDevice;
 import com.jogamp.newt.MonitorMode;
 import com.jogamp.newt.Screen;
+import com.jogamp.newt.opengl.GLWindow;
 import com.jogamp.newt.util.MonitorModeUtil;
 
 /** Implements the {@link Graphics} interface with Jogl.
  * 
  * @author mzechner */
 public class JoglGraphics extends JoglGraphicsBase {
-	ApplicationListener listener = null;
-	boolean created = false;
-	boolean exclusiveMode = false;
-	final JoglDisplayMode desktopMode;
-	final JoglApplicationConfiguration config;
-	String extensions;
+	/**
+	 * TODO move most of the code into a separate NEWT JoglGraphicsBase implementation and into a NEWT JoglApplicationConfiguration implementation,
+	 * implement getDesktopDisplayMode() and move getDisplayModes() into the latter
+	 */
+	final JoglNewtDisplayMode desktopMode;
 
 	public JoglGraphics (ApplicationListener listener, JoglApplicationConfiguration config) {
-		initialize(config);
-		if (listener == null) throw new GdxRuntimeException("RenderListener must not be null");
-		this.listener = listener;
-		this.config = config;
-		canvas.setFullscreen(config.fullscreen);
-		canvas.setUndecorated(config.fullscreen);
-		canvas.getScreen().addReference();
-		MonitorMode mode = canvas.getMainMonitor().getCurrentMode();
-		//FIXME use JoglApplicationConfiguration.getDesktopDisplayMode ()
-		desktopMode = (JoglDisplayMode) new JoglDisplayMode(mode.getRotatedWidth(), mode.getRotatedHeight(), (int) mode.getRefreshRate(), mode.getSurfaceSize().getBitsPerPixel(), mode);
+		initialize(listener, config);
+		getCanvas().setFullscreen(config.fullscreen);
+		getCanvas().setUndecorated(config.fullscreen);
+		getCanvas().getScreen().addReference();
+		MonitorMode mode = getCanvas().getMainMonitor().getCurrentMode();
+		desktopMode = new JoglNewtDisplayMode(mode.getRotatedWidth(), mode.getRotatedHeight(), (int) mode.getRefreshRate(), mode.getSurfaceSize().getBitsPerPixel(), mode);
 	}
-
-	public void create () {
-		super.create();
+	
+	protected GLWindow createCanvas(final GLCapabilities caps) {
+		return GLWindow.create(caps);
 	}
-
-	public void pause () {
-		super.pause();
-		if (!canvas.getContext().isCurrent()) {
-		    canvas.getContext().makeCurrent();
-		}
-		listener.pause();
+	
+	GLWindow getCanvas () {
+		return (GLWindow) super.getCanvas();
 	}
-
-	public void resume () {
-		if (!canvas.getContext().isCurrent()) {
-		    canvas.getContext().makeCurrent();
-		}
-		listener.resume();
-		super.resume();
+	
+	@Override
+	public int getHeight () {
+		return getCanvas().getHeight();
 	}
 
 	@Override
-	public void init (GLAutoDrawable drawable) {
-		initializeGLInstances(drawable);
-		setVSync(config.vSyncEnabled);
-
-		if (!created) {
-			listener.create();
-			synchronized (this) {
-				paused = false;
-			}
-			created = true;
-		}
-	}
-
-	@Override
-	public void reshape (GLAutoDrawable drawable, int x, int y, int width, int height) {
-		listener.resize(width, height);
-	}
-
-	@Override
-	public void display (GLAutoDrawable arg0) {
-		synchronized (this) {
-			if (!paused) {
-				updateTimes();
-				synchronized (((JoglApplication)Gdx.app).runnables) {
-					JoglApplication app = ((JoglApplication)Gdx.app);
-					app.executedRunnables.clear();
-					app.executedRunnables.addAll(app.runnables);
-					app.runnables.clear();
-
-					for (int i = 0; i < app.executedRunnables.size(); i++) {
-						try {
-							app.executedRunnables.get(i).run();
-						} catch (Throwable t) {
-							t.printStackTrace();
-						}
-					}
-				}
-				((JoglInput)(Gdx.input)).processEvents();
-				listener.render();
-				((OpenALAudio)Gdx.audio).update();
-			}
-		}
-	}
-
-	public void destroy () {
-		if (!canvas.getContext().isCurrent()) {
-		    canvas.getContext().makeCurrent();
-		}
-		listener.dispose();
-		canvas.setFullscreen(false);
+	public int getWidth () {
+		return getCanvas().getWidth();
 	}
 
 	private float getScreenResolution() {
-		Screen screen = canvas.getScreen();
+		Screen screen = getCanvas().getScreen();
 		screen.addReference();
-		MonitorMode mmode = canvas.getMainMonitor().getCurrentMode();
-		final DimensionImmutable sdim = canvas.getMainMonitor().getSizeMM();
+		MonitorMode mmode = getCanvas().getMainMonitor().getCurrentMode();
+		final DimensionImmutable sdim = getCanvas().getMainMonitor().getSizeMM();
 		final DimensionImmutable spix = mmode.getSurfaceSize().getResolution();
         float screenResolution = (float)spix.getWidth() / (float)sdim.getWidth();
-        canvas.getScreen().removeReference();
+        getCanvas().getScreen().removeReference();
         return(screenResolution);
+	}
+	
+	@Override
+	public void create() {
+		super.create();
+	}
+	
+	@Override
+	public void pause() {
+		super.pause();
+	}
+	
+	@Override
+	public void resume() {
+		super.resume();
+	}
+	
+	@Override
+	public void destroy () {
+		super.destroy();
+		getCanvas().setFullscreen(false);
 	}
 	
 	@Override
@@ -173,10 +129,10 @@ public class JoglGraphics extends JoglGraphicsBase {
 		return true;
 	}
 
-	protected static class JoglDisplayMode extends DisplayMode {
+	protected static class JoglNewtDisplayMode extends DisplayMode {
 		final MonitorMode mode;
 
-		protected JoglDisplayMode (int width, int height, int refreshRate, int bitsPerPixel, MonitorMode mode) {
+		protected JoglNewtDisplayMode (int width, int height, int refreshRate, int bitsPerPixel, MonitorMode mode) {
 			super(width, height, refreshRate, bitsPerPixel);
 			this.mode = mode;
 		}
@@ -184,19 +140,18 @@ public class JoglGraphics extends JoglGraphicsBase {
 
 	@Override
 	public DisplayMode[] getDisplayModes () {
-		//FIXME use JoglApplicationConfiguration.getDisplayModes()
-		List<MonitorMode> screenModes = canvas.getScreen().getMonitorModes();
+		List<MonitorMode> screenModes = getCanvas().getScreen().getMonitorModes();
 		DisplayMode[] displayModes = new DisplayMode[screenModes.size()];
 		for (int modeIndex = 0 ; modeIndex < displayModes.length ; modeIndex++) {
 			MonitorMode mode = screenModes.get(modeIndex);
-			displayModes[modeIndex] = new JoglDisplayMode(mode.getRotatedWidth(), mode.getRotatedHeight(), (int) mode.getRefreshRate(), mode.getSurfaceSize().getBitsPerPixel(), mode);
+			displayModes[modeIndex] = new JoglNewtDisplayMode(mode.getRotatedWidth(), mode.getRotatedHeight(), (int) mode.getRefreshRate(), mode.getSurfaceSize().getBitsPerPixel(), mode);
 		}
 		return displayModes;
 	}
 
 	@Override
 	public void setTitle (String title) {
-		canvas.setTitle(title);
+		getCanvas().setTitle(title);
 	}
 
 	@Override
@@ -206,22 +161,22 @@ public class JoglGraphics extends JoglGraphicsBase {
 
 	@Override
 	public boolean setDisplayMode (int width, int height, boolean fullscreen) {
-		if (width == canvas.getWidth() && height == canvas.getHeight() && canvas.isFullscreen() == fullscreen) {
+		if (width == getCanvas().getWidth() && height == getCanvas().getHeight() && getCanvas().isFullscreen() == fullscreen) {
 			return true;
 		}
 		MonitorMode targetDisplayMode = null;
-		final MonitorDevice monitor = canvas.getMainMonitor();
+		final MonitorDevice monitor = getCanvas().getMainMonitor();
         List<MonitorMode> monitorModes = monitor.getSupportedModes();
 		Dimension dimension = new Dimension(width,height);
 		monitorModes = MonitorModeUtil.filterByResolution(monitorModes, dimension);
-		monitorModes = MonitorModeUtil.filterByRate(monitorModes, canvas.getMainMonitor().getCurrentMode().getRefreshRate());
+		monitorModes = MonitorModeUtil.filterByRate(monitorModes, getCanvas().getMainMonitor().getCurrentMode().getRefreshRate());
 		monitorModes = MonitorModeUtil.getHighestAvailableRate(monitorModes);
 		if (monitorModes == null || monitorModes.isEmpty()) {
 			return false;
 		}
 		targetDisplayMode = monitorModes.get(0);
-		canvas.setUndecorated(fullscreen);
-		canvas.setFullscreen(fullscreen);
+		getCanvas().setUndecorated(fullscreen);
+		getCanvas().setFullscreen(fullscreen);
 		monitor.setCurrentMode(targetDisplayMode);
 		if (Gdx.gl != null) Gdx.gl.glViewport(0, 0, targetDisplayMode.getRotatedWidth(), targetDisplayMode.getRotatedHeight());
 		config.width = targetDisplayMode.getRotatedWidth();
@@ -231,11 +186,11 @@ public class JoglGraphics extends JoglGraphicsBase {
 	
 	@Override
 	public boolean setDisplayMode (DisplayMode displayMode) {
-		MonitorMode screenMode = ((JoglDisplayMode)displayMode).mode;
+		MonitorMode screenMode = ((JoglNewtDisplayMode)displayMode).mode;
 		
-		canvas.setUndecorated(true);
-		canvas.setFullscreen(true);
-		canvas.getMainMonitor().setCurrentMode(screenMode);
+		getCanvas().setUndecorated(true);
+		getCanvas().setFullscreen(true);
+		getCanvas().getMainMonitor().setCurrentMode(screenMode);
 		if (Gdx.gl != null) Gdx.gl.glViewport(0, 0, displayMode.width, displayMode.height);
 		config.width = displayMode.width;
 		config.height = displayMode.height;
@@ -244,56 +199,7 @@ public class JoglGraphics extends JoglGraphicsBase {
 	}
 
 	@Override
-	public void setVSync (boolean vsync) {
-		if (vsync)
-			canvas.getGL().setSwapInterval(1);
-		else
-			canvas.getGL().setSwapInterval(0);
-	}
-
-	@Override
-	public BufferFormat getBufferFormat () {
-		GLCapabilitiesImmutable caps = canvas.getChosenGLCapabilities();
-		return new BufferFormat(caps.getRedBits(), caps.getGreenBits(), caps.getBlueBits(), caps.getAlphaBits(),
-			caps.getDepthBits(), caps.getStencilBits(), caps.getNumSamples(), false);
-	}
-
-	@Override
-	public boolean supportsExtension (String extension) {
-		if (extensions == null) extensions = Gdx.gl.glGetString(GL20.GL_EXTENSIONS);
-		return extensions.contains(extension);
-	}
-
-	@Override
 	public boolean isFullscreen () {
-		return canvas.isFullscreen();
-	}
-
-	@Override
-	public void dispose(GLAutoDrawable drawable) {
-		setContinuousRendering(true);
-        pause();
-        destroy();
-	}
-
-	@Override
-	public void setContinuousRendering(boolean isContinuous) {
-	}
-
-	@Override
-	public boolean isContinuousRendering() {
-		return true;
-	}
-
-	@Override
-	public boolean isGL30Available() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public long getFrameId() {
-		// TODO Auto-generated method stub
-		return 0;
+		return getCanvas().isFullscreen();
 	}
 }

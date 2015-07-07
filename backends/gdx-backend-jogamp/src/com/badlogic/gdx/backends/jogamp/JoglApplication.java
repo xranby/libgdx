@@ -16,13 +16,6 @@
 
 package com.badlogic.gdx.backends.jogamp;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import com.jogamp.nativewindow.util.Dimension;
-
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Audio;
@@ -34,17 +27,16 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.LifecycleListener;
 import com.badlogic.gdx.Net;
 import com.badlogic.gdx.Preferences;
-import com.badlogic.gdx.backends.jogamp.JoglGraphics.JoglDisplayMode;
 import com.badlogic.gdx.backends.jogamp.audio.OpenALAudio;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Clipboard;
-import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.badlogic.gdx.utils.ObjectMap;
 import com.jogamp.newt.event.WindowAdapter;
 import com.jogamp.newt.event.WindowEvent;
 import com.jogamp.newt.opengl.GLWindow;
 
-/** An implemenation of the {@link Application} interface based on Jogl for Windows, Linux and Mac. Instantiate this class with
- * apropriate parameters and then register {@link ApplicationListener} or {@link InputProcessor} instances.
+/** An implementation of the {@link Application} interface based on Jogl for Windows, Linux and Mac. Instantiate this class with
+ * appropriate parameters and then register {@link ApplicationListener} or {@link InputProcessor} instances.
  * 
  * @author mzechner */
 public class JoglApplication implements Application {
@@ -53,8 +45,8 @@ public class JoglApplication implements Application {
 	protected JoglNet net;
 	JoglFiles files;
 	OpenALAudio audio;
-	List<Runnable> runnables = new ArrayList<Runnable>();
-	List<Runnable> executedRunnables = new ArrayList<Runnable>();
+	protected final Array<Runnable> runnables = new Array<Runnable>();
+	protected final Array<Runnable> executedRunnables = new Array<Runnable>();
 	int logLevel = LOG_INFO;
 	protected ApplicationListener listener;
 	protected final Array<LifecycleListener> lifecycleListeners = new Array<LifecycleListener>();
@@ -153,10 +145,10 @@ public class JoglApplication implements Application {
 
 	/** @return the GLCanvas of the application. */
 	public GLWindow getGLCanvas () {
-		return graphics.canvas;
+		return graphics.getCanvas();
 	}
 
-	Map<String, Preferences> preferences = new HashMap<String, Preferences>();
+	ObjectMap<String, Preferences> preferences = new ObjectMap<String, Preferences>();
 
 	@Override
 	public Preferences getPreferences (String name) {
@@ -180,6 +172,19 @@ public class JoglApplication implements Application {
 			runnables.add(runnable);
 			Gdx.graphics.requestRendering();
 		}
+	}
+	
+	public boolean executeRunnables () {
+		synchronized (runnables) {
+			for (int i = runnables.size - 1; i >= 0; i--)
+				executedRunnables.add(runnables.get(i));
+			runnables.clear();
+		}
+		if (executedRunnables.size == 0) return false;
+		do
+			executedRunnables.pop().run();
+		while (executedRunnables.size > 0);
+		return true;
 	}
 
 	@Override

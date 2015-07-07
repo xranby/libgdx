@@ -18,22 +18,29 @@ package com.badlogic.gdx.backends.jogamp;
 
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GLAutoDrawable;
+import com.jogamp.opengl.GLCapabilitiesImmutable;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.GLException;
+import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;
+import com.badlogic.gdx.backends.jogamp.audio.OpenALAudio;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.GL30;
 import com.badlogic.gdx.utils.GdxRuntimeException;
-import com.jogamp.newt.opengl.GLWindow;
 import com.jogamp.opengl.util.Animator;
 
 public abstract class JoglGraphicsBase implements Graphics, GLEventListener {
 	static int major, minor;
 
-	GLWindow canvas;
+	ApplicationListener listener = null;
+	boolean created = false;
+	String extensions;
+	volatile boolean isContinuous = true;
+	volatile boolean requestRendering = false;
+	GLAutoDrawable canvas;
 	Animator animator;
 	long frameStart = System.nanoTime();
 	long lastFrameTime = System.nanoTime();
@@ -43,10 +50,14 @@ public abstract class JoglGraphicsBase implements Graphics, GLEventListener {
 	boolean paused = true;
 	JoglApplicationConfiguration config;
 
+	long frameId = -1;
 	GL20 gl20;
 	GL30 gl30;
 
-	void initialize (JoglApplicationConfiguration config) {
+	
+	void initialize (ApplicationListener listener, JoglApplicationConfiguration config) {
+		if (listener == null) throw new GdxRuntimeException("RenderListener must not be null");
+		this.listener = listener;
 		this.config = config;
 
 		GLCapabilities caps;
@@ -77,13 +88,15 @@ public abstract class JoglGraphicsBase implements Graphics, GLEventListener {
 		caps.setSampleBuffers(config.samples > 0);
 		caps.setDoubleBuffered(true);
 
-		canvas = GLWindow.create(caps);
+		canvas = createCanvas(caps);
 		//canvas.setBackground(Color.BLACK);
 		canvas.addGLEventListener(this);
 
 	}
+	
+	protected abstract GLAutoDrawable createCanvas(final GLCapabilities caps);
 
-	GLWindow getCanvas () {
+	GLAutoDrawable getCanvas () {
 		return canvas;
 	}
 
@@ -100,9 +113,17 @@ public abstract class JoglGraphicsBase implements Graphics, GLEventListener {
 			paused = true;
 		}
 		animator.stop();
+		if (!canvas.getContext().isCurrent()) {
+		    canvas.getContext().makeCurrent();
+		}
+		listener.pause();
 	}
 
 	void resume () {
+		if (!canvas.getContext().isCurrent()) {
+		    canvas.getContext().makeCurrent();
+		}
+		listener.resume();
 		paused = false;
 		frameStart = System.nanoTime();
 		lastFrameTime = frameStart;
@@ -110,6 +131,101 @@ public abstract class JoglGraphicsBase implements Graphics, GLEventListener {
 		animator.resume();
 		animator.setRunAsFastAsPossible(true);
 		animator.start();
+	}
+	
+	@Override
+	public void init (GLAutoDrawable drawable) {
+		initializeGLInstances(drawable);
+		setVSync(config.vSyncEnabled);
+
+		if (!created) {
+			listener.create();
+			synchronized (this) {
+				paused = false;
+			}
+			created = true;
+		}
+	}
+
+	@Override
+	public void reshape (GLAutoDrawable drawable, int x, int y, int width, int height) {
+		listener.resize(width, height);
+	}
+
+	@Override
+	public void display (GLAutoDrawable arg0) {
+		synchronized (this) {
+			if (!paused) {
+				final boolean shouldRender = ((JoglApplication)Gdx.app).executeRunnables() | shouldRender();
+				if (shouldRender) {
+					updateTime();
+					((JoglInput) (Gdx.input)).processEvents();
+					frameId++;
+					listener.render();
+					((OpenALAudio) Gdx.audio).update();
+				}
+			}
+		}
+	}
+
+	void destroy () {
+		if (!canvas.getContext().isCurrent()) {
+		    canvas.getContext().makeCurrent();
+		}
+		listener.dispose();
+	}
+	
+	@Override
+	public void setVSync (boolean vsync) {
+		if (vsync)
+			canvas.getGL().setSwapInterval(1);
+		else
+			canvas.getGL().setSwapInterval(0);
+	}
+
+	@Override
+	public void dispose(GLAutoDrawable drawable) {
+		setContinuousRendering(true);
+        pause();
+        destroy();
+	}
+
+	@Override
+	public boolean supportsExtension (String extension) {
+		if (extensions == null) extensions = Gdx.gl.glGetString(GL20.GL_EXTENSIONS);
+		return extensions.contains(extension);
+	}
+	
+	@Override
+	public void setContinuousRendering (boolean isContinuous) {
+		this.isContinuous = isContinuous;
+	}
+
+	@Override
+	public boolean isContinuousRendering () {
+		return isContinuous;
+	}
+
+	@Override
+	public void requestRendering () {
+		synchronized (this) {
+			requestRendering = true;
+		}
+	}
+
+	public boolean shouldRender () {
+		synchronized (this) {
+			boolean rq = requestRendering;
+			requestRendering = false;
+			return rq || isContinuous /*|| isDirty()*/;
+		}
+	}
+	
+	@Override
+	public BufferFormat getBufferFormat () {
+		GLCapabilitiesImmutable caps = canvas.getChosenGLCapabilities();
+		return new BufferFormat(caps.getRedBits(), caps.getGreenBits(), caps.getBlueBits(), caps.getAlphaBits(),
+			caps.getDepthBits(), caps.getStencilBits(), caps.getNumSamples(), false);
 	}
 
 	void initializeGLInstances (GLAutoDrawable drawable) {
@@ -141,7 +257,7 @@ public abstract class JoglGraphicsBase implements Graphics, GLEventListener {
 		}
 	}
 
-	void updateTimes () {
+	void updateTime () {
 		deltaTime = (System.nanoTime() - lastFrameTime) / 1000000000.0f;
 		lastFrameTime = System.nanoTime();
 
@@ -169,16 +285,6 @@ public abstract class JoglGraphicsBase implements Graphics, GLEventListener {
 	}
 
 	@Override
-	public int getHeight () {
-		return canvas.getHeight();
-	}
-
-	@Override
-	public int getWidth () {
-		return canvas.getWidth();
-	}
-
-	@Override
 	public GL20 getGL20 () {
 		return gl20;
 	}
@@ -187,15 +293,19 @@ public abstract class JoglGraphicsBase implements Graphics, GLEventListener {
 	public GL30 getGL30 () {
 		return gl30;
 	}
+	
+	@Override
+	public boolean isGL30Available () {
+		return gl30 != null;
+	}
 
 	@Override
 	public GraphicsType getType () {
 		return GraphicsType.JoglGL;
 	}
-
+	
 	@Override
-	public void requestRendering () {
-		//TODO: fix recursive loop
-		//canvas.display();
+	public long getFrameId() {
+		return frameId;
 	}
 }
