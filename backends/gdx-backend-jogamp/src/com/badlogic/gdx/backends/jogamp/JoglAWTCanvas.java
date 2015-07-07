@@ -18,10 +18,8 @@ package com.badlogic.gdx.backends.jogamp;
 import java.awt.Canvas;
 import java.awt.Cursor;
 
-import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Graphics.DisplayMode;
 import com.badlogic.gdx.backends.jogamp.audio.OpenALAudio;
 import com.jogamp.newt.awt.NewtCanvasAWT;
 
@@ -64,15 +62,9 @@ public class JoglAWTCanvas extends JoglApplication {
 		};
 		canvas = new NewtCanvasAWT(getGLCanvas());
 		input = new JoglInput(graphics.getCanvas());
-		//audio = new OpenALAudio(16, config.audioDeviceBufferCount, config.audioDeviceBufferSize);
-		//files = new JoglFiles();
-		//net = new JoglNet();
 		Gdx.app = this;
 		Gdx.graphics = getGraphics();
 		Gdx.input = getInput();
-		//Gdx.audio = getAudio();
-		//Gdx.files = getFiles();
-		//Gdx.net = getNet();
 		if (!JoglApplicationConfiguration.disableAudio && Gdx.audio == null) {
 			audio = new OpenALAudio();
 			Gdx.audio = audio;
