@@ -20,6 +20,7 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.Graphics.DisplayMode;
 
+//FIXME drive it abstract
 public class JoglApplicationConfiguration {
 	/** If true, OpenAL will not be used. This means {@link Application#getAudio()} returns null and the gdx-joal.jar and OpenAL
 	 * natives are not needed. */
@@ -34,6 +35,8 @@ public class JoglApplicationConfiguration {
 	public int samples = 0;
 	/** width & height of application **/
 	public int width = 480, height = 320;
+	/** x & y of application window, -1 for center **/
+	public int x = -1, y = -1;//FIXME use those fields
 	/** fullscreen **/
 	public boolean fullscreen = false;
 	/** whether to enable vsync, can be changed at runtime via {@link Graphics#setVSync(boolean)} **/
@@ -46,6 +49,10 @@ public class JoglApplicationConfiguration {
 	public int audioDeviceBufferSize = 512;
 	/** the audio device buffer count **/
 	public int audioDeviceBufferCount = 9;
+	/** Target framerate when the window is in the foreground. The CPU sleeps as needed. Use 0 to never sleep. **/
+	public int foregroundFPS = 60;//FIXME use it
+	/** Target framerate when the window is not in the foreground. The CPU sleeps as needed. Use 0 to never sleep, -1 to not render. **/
+	public int backgroundFPS = 60;//FIXME use it
 
 	/** Sets the r, g, b and a bits per channel based on the given {@link DisplayMode} and sets the fullscreen flag to true.
 	 * @param mode */
@@ -71,5 +78,14 @@ public class JoglApplicationConfiguration {
 			this.a = 8;
 		}
 		this.fullscreen = true;
+	}
+	
+	//FIXME drive them abstract
+	public DisplayMode[] getDisplayModes() {
+		return null;
+	}
+	
+	public DisplayMode getDesktopDisplayMode () {
+		return null;
 	}
 }
