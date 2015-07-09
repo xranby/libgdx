@@ -40,6 +40,8 @@ public class JoglApplicationConfiguration {
 	public boolean vSyncEnabled = true;
 	/** title of application **/
 	public String title = "Jogl Application";
+	/** the maximum number of sources that can be played simultaneously */
+	public int audioDeviceSimultaneousSources = 16;
 	/** the audio device buffer size in samples **/
 	public int audioDeviceBufferSize = 512;
 	/** the audio device buffer count **/

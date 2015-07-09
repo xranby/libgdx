@@ -74,7 +74,11 @@ public class JoglApplication implements Application {
 		this.listener = listener;
 		graphics = new JoglGraphics(listener, config);
 		input = new JoglInput(graphics.getCanvas());
-		audio = new OpenALAudio(16, config.audioDeviceBufferCount, config.audioDeviceBufferSize);
+		if (!JoglApplicationConfiguration.disableAudio && Gdx.audio == null) {
+		    audio = new OpenALAudio(config.audioDeviceSimultaneousSources, config.audioDeviceBufferCount, config.audioDeviceBufferSize);
+		} else {
+			audio = null;
+		}
 		files = new JoglFiles();
         net = new JoglNet();
 		Gdx.app = this;
