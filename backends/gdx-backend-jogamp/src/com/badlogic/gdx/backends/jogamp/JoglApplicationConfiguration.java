@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2011 See AUTHORS file.
+ * Copyright 2015 See AUTHORS file.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,5 +87,9 @@ public class JoglApplicationConfiguration {
 	
 	public DisplayMode getDesktopDisplayMode () {
 		return null;
+	}
+	
+	public float getScreenResolution() {
+		return Float.NaN;
 	}
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2011 See AUTHORS file.
+ * Copyright 2015 See AUTHORS file.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ public class JoglApplet  extends Applet {
 
 	class JoglAppletApplication extends JoglApplication {
 
-		public JoglAppletApplication (ApplicationListener listener, JoglApplicationConfiguration config) {
+		public JoglAppletApplication (ApplicationListener listener, JoglNewtApplicationConfiguration config) {
 			super(listener, config);
 		}
 		
@@ -39,7 +39,7 @@ public class JoglApplet  extends Applet {
 		}
 	}
 	
-	public JoglApplet(final ApplicationListener listener, final JoglApplicationConfiguration config) {
+	public JoglApplet(final ApplicationListener listener, final JoglNewtApplicationConfiguration config) {
 		app = new JoglAppletApplication(listener, config);
 		canvas = new NewtCanvasAWT(app.getGLCanvas());
 		//FIXME maybe something is needed to stop the application in removeNotify()

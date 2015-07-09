@@ -256,6 +256,36 @@ public abstract class JoglGraphicsBase implements Graphics, GLEventListener {
 			}
 		}
 	}
+	
+	@Override
+	public float getPpiX () {
+		return config.getScreenResolution();
+	}
+
+	@Override
+	public float getPpiY () {
+		return config.getScreenResolution();
+	}
+
+	@Override
+	public float getPpcX () {
+		return (config.getScreenResolution() / 2.54f);
+	}
+
+	@Override
+	public float getPpcY () {
+		return (config.getScreenResolution() / 2.54f);
+	}
+
+	@Override
+	public float getDensity () {
+		return (config.getScreenResolution() / 160f);
+	}
+	
+	@Override
+	public DisplayMode[] getDisplayModes () {
+		return config.getDisplayModes();
+	}
 
 	void updateTime () {
 		deltaTime = (System.nanoTime() - lastFrameTime) / 1000000000.0f;

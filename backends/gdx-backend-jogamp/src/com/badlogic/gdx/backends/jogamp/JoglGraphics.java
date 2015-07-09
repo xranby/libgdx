@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2011 See AUTHORS file.
+ * Copyright 2015 See AUTHORS file.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,12 @@ package com.badlogic.gdx.backends.jogamp;
 import java.util.List;
 
 import com.jogamp.nativewindow.util.Dimension;
-import com.jogamp.nativewindow.util.DimensionImmutable;
 import com.jogamp.opengl.GLCapabilities;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;
 import com.jogamp.newt.MonitorDevice;
 import com.jogamp.newt.MonitorMode;
-import com.jogamp.newt.Screen;
 import com.jogamp.newt.opengl.GLWindow;
 import com.jogamp.newt.util.MonitorModeUtil;
 
@@ -40,13 +38,12 @@ public class JoglGraphics extends JoglGraphicsBase {
 	 */
 	final JoglNewtDisplayMode desktopMode;
 
-	public JoglGraphics (ApplicationListener listener, JoglApplicationConfiguration config) {
+	public JoglGraphics (ApplicationListener listener, JoglNewtApplicationConfiguration config) {
 		initialize(listener, config);
 		getCanvas().setFullscreen(config.fullscreen);
 		getCanvas().setUndecorated(config.fullscreen);
 		getCanvas().getScreen().addReference();
-		MonitorMode mode = getCanvas().getMainMonitor().getCurrentMode();
-		desktopMode = new JoglNewtDisplayMode(mode.getRotatedWidth(), mode.getRotatedHeight(), (int) mode.getRefreshRate(), mode.getSurfaceSize().getBitsPerPixel(), mode);
+		desktopMode = config.getDesktopDisplayMode();
 	}
 	
 	protected GLWindow createCanvas(final GLCapabilities caps) {
@@ -65,17 +62,6 @@ public class JoglGraphics extends JoglGraphicsBase {
 	@Override
 	public int getWidth () {
 		return getCanvas().getWidth();
-	}
-
-	private float getScreenResolution() {
-		Screen screen = getCanvas().getScreen();
-		screen.addReference();
-		MonitorMode mmode = getCanvas().getMainMonitor().getCurrentMode();
-		final DimensionImmutable sdim = getCanvas().getMainMonitor().getSizeMM();
-		final DimensionImmutable spix = mmode.getSurfaceSize().getResolution();
-        float screenResolution = (float)spix.getWidth() / (float)sdim.getWidth();
-        getCanvas().getScreen().removeReference();
-        return(screenResolution);
 	}
 	
 	@Override
@@ -98,31 +84,6 @@ public class JoglGraphics extends JoglGraphicsBase {
 		super.destroy();
 		getCanvas().setFullscreen(false);
 	}
-	
-	@Override
-	public float getPpiX () {
-		return getScreenResolution();
-	}
-
-	@Override
-	public float getPpiY () {
-		return getScreenResolution();
-	}
-
-	@Override
-	public float getPpcX () {
-		return (getScreenResolution() / 2.54f);
-	}
-
-	@Override
-	public float getPpcY () {
-		return (getScreenResolution() / 2.54f);
-	}
-
-	@Override
-	public float getDensity () {
-		return (getScreenResolution() / 160f);
-	}
 
 	@Override
 	public boolean supportsDisplayModeChange () {
@@ -137,26 +98,15 @@ public class JoglGraphics extends JoglGraphicsBase {
 			this.mode = mode;
 		}
 	}
-
+	
 	@Override
-	public DisplayMode[] getDisplayModes () {
-		List<MonitorMode> screenModes = getCanvas().getScreen().getMonitorModes();
-		DisplayMode[] displayModes = new DisplayMode[screenModes.size()];
-		for (int modeIndex = 0 ; modeIndex < displayModes.length ; modeIndex++) {
-			MonitorMode mode = screenModes.get(modeIndex);
-			displayModes[modeIndex] = new JoglNewtDisplayMode(mode.getRotatedWidth(), mode.getRotatedHeight(), (int) mode.getRefreshRate(), mode.getSurfaceSize().getBitsPerPixel(), mode);
-		}
-		return displayModes;
+	public DisplayMode getDesktopDisplayMode () {
+		return desktopMode;
 	}
 
 	@Override
 	public void setTitle (String title) {
 		getCanvas().setTitle(title);
-	}
-
-	@Override
-	public DisplayMode getDesktopDisplayMode () {
-		return desktopMode;
 	}
 
 	@Override

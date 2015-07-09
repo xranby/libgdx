@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2011 See AUTHORS file.
+ * Copyright 2015 See AUTHORS file.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-
 package com.badlogic.gdx.backends.jogamp;
 
 import java.awt.Toolkit;
@@ -28,7 +27,8 @@ import com.badlogic.gdx.utils.Clipboard;
 
 /** Clipboard implementation for desktop that uses the system clipboard via the default AWT {@link Toolkit}.
  * @author mzechner */
-public class JoglClipboard implements Clipboard, ClipboardOwner {
+public class JoglAwtClipboard implements Clipboard, ClipboardOwner {
+	@SuppressWarnings("null")
 	@Override
 	public String getContents () {
 		String result = "";

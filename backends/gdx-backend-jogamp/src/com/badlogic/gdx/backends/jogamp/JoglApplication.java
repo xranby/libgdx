@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2011 See AUTHORS file.
+ * Copyright 2015 See AUTHORS file.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,18 +58,18 @@ public class JoglApplication implements Application {
 	 * @param width the width of the surface in pixels
 	 * @param height the height of the surface in pixels*/
 	public JoglApplication (final ApplicationListener listener, final String title, final int width, final int height) {
-		final JoglApplicationConfiguration config = new JoglApplicationConfiguration();
+		final JoglNewtApplicationConfiguration config = new JoglNewtApplicationConfiguration();
 		config.title = title;
 		config.width = width;
 		config.height = height;
         initialize(listener, config);
 	}
 
-	public JoglApplication (final ApplicationListener listener, final JoglApplicationConfiguration config) {
+	public JoglApplication (final ApplicationListener listener, final JoglNewtApplicationConfiguration config) {
 		initialize(listener, config);
 	}
 
-	void initialize (ApplicationListener listener, JoglApplicationConfiguration config) {
+	void initialize (ApplicationListener listener, JoglNewtApplicationConfiguration config) {
 		JoglNativesLoader.load();
 		this.listener = listener;
 		graphics = new JoglGraphics(listener, config);
@@ -172,7 +172,7 @@ public class JoglApplication implements Application {
 
 	@Override
 	public Clipboard getClipboard () {
-		return new JoglClipboard();
+		return new JoglNewtClipboard();
 	}
 	
 	@Override
