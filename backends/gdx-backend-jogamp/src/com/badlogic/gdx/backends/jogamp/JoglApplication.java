@@ -75,7 +75,12 @@ public class JoglApplication implements Application {
 		graphics = new JoglGraphics(listener, config);
 		input = new JoglInput(graphics.getCanvas());
 		if (!JoglApplicationConfiguration.disableAudio && Gdx.audio == null) {
-		    audio = new OpenALAudio(config.audioDeviceSimultaneousSources, config.audioDeviceBufferCount, config.audioDeviceBufferSize);
+			try {
+		        audio = new OpenALAudio(config.audioDeviceSimultaneousSources, config.audioDeviceBufferCount, config.audioDeviceBufferSize);
+			} catch (Throwable t) {
+				log("JoglApplication", "Couldn't initialize audio, disabling audio", t);
+				JoglApplicationConfiguration.disableAudio = true;
+			}
 		} else {
 			audio = null;
 		}
