@@ -24,7 +24,7 @@ import javax.swing.SwingUtilities;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.backends.jogamp.JoglAWTCanvas;
+import com.badlogic.gdx.backends.jogamp.JoglNewtAwtCanvas;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -34,15 +34,15 @@ import com.badlogic.gdx.tests.UITest;
 /** Demonstrates how to use LwjglAWTCanvas to have multiple GL widgets in a Swing application.
  * @author mzechner */
 public class SwingJoglTest extends JFrame {
-	JoglAWTCanvas canvas1;
+	JoglNewtAwtCanvas canvas1;
 
 	public SwingJoglTest () {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		Container container = getContentPane();
-		canvas1 = new JoglAWTCanvas(new MusicTest(), "", 200, 480);
-		JoglAWTCanvas canvas2 = new JoglAWTCanvas(new UITest(), "", 200, 480, canvas1);
-		JoglAWTCanvas canvas3 = new JoglAWTCanvas(new WindowCreator(), "", 200, 480, canvas1);
+		canvas1 = new JoglNewtAwtCanvas(new MusicTest(), "", 200, 480);
+		JoglNewtAwtCanvas canvas2 = new JoglNewtAwtCanvas(new UITest(), "", 200, 480, canvas1);
+		JoglNewtAwtCanvas canvas3 = new JoglNewtAwtCanvas(new WindowCreator(), "", 200, 480, canvas1);
 
 		/*canvas1.getCanvas().setSize(200, 480);
 		canvas2.getCanvas().setSize(200, 480);
@@ -81,7 +81,7 @@ public class SwingJoglTest extends JFrame {
 
 		private void createWindow () {
 			JFrame window = new JFrame();
-			JoglAWTCanvas canvas = new JoglAWTCanvas(new UITest(), "", 200, 200, canvas1);
+			JoglNewtAwtCanvas canvas = new JoglNewtAwtCanvas(new UITest(), "", 200, 200, canvas1);
 			window.getContentPane().add(canvas.getCanvas(), BorderLayout.CENTER);
 			window.pack();
 			window.setVisible(true);

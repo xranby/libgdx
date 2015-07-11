@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-
 package com.badlogic.gdx.backends.jogamp;
 
 import com.badlogic.gdx.Application;
@@ -23,25 +22,17 @@ import com.badlogic.gdx.Files;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.LifecycleListener;
 import com.badlogic.gdx.Net;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.backends.jogamp.audio.OpenALAudio;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Clipboard;
 import com.badlogic.gdx.utils.ObjectMap;
-import com.jogamp.newt.event.WindowAdapter;
-import com.jogamp.newt.event.WindowEvent;
-import com.jogamp.newt.opengl.GLWindow;
+import com.jogamp.opengl.GLAutoDrawable;
 
-/** An implementation of the {@link Application} interface based on Jogl for Windows, Linux and Mac. Instantiate this class with
- * appropriate parameters and then register {@link ApplicationListener} or {@link InputProcessor} instances.
- * 
- * @author mzechner */
-public class JoglApplication implements Application {
-	JoglGraphics graphics;
-	JoglInput input;
+public abstract class JoglApplicationBase implements Application {
+	JoglGraphicsBase graphics;
+	Input input;
 	protected JoglNet net;
 	JoglFiles files;
 	OpenALAudio audio;
@@ -51,29 +42,20 @@ public class JoglApplication implements Application {
 	protected ApplicationListener listener;
 	protected final Array<LifecycleListener> lifecycleListeners = new Array<LifecycleListener>();
 
-	/** Creates a new {@link JoglApplication} with the given title and dimensions.
-	 * 
-	 * @param listener the ApplicationListener implementing the program logic
-	 * @param title the title of the application
-	 * @param width the width of the surface in pixels
-	 * @param height the height of the surface in pixels*/
-	public JoglApplication (final ApplicationListener listener, final String title, final int width, final int height) {
-		final JoglNewtApplicationConfiguration config = new JoglNewtApplicationConfiguration();
-		config.title = title;
-		config.width = width;
-		config.height = height;
-        initialize(listener, config);
-	}
-
-	public JoglApplication (final ApplicationListener listener, final JoglNewtApplicationConfiguration config) {
+	public JoglApplicationBase (final ApplicationListener listener, final JoglApplicationConfiguration config) {
+		super();
 		initialize(listener, config);
 	}
 
-	void initialize (ApplicationListener listener, JoglNewtApplicationConfiguration config) {
+	protected abstract JoglGraphicsBase createGraphics(ApplicationListener listener, JoglApplicationConfiguration config);
+	
+	protected abstract Input createInput(JoglGraphicsBase graphics);
+	
+	void initialize (ApplicationListener listener, JoglApplicationConfiguration config) {
 		JoglNativesLoader.load();
 		this.listener = listener;
-		graphics = new JoglGraphics(listener, config);
-		input = new JoglInput(graphics.getCanvas());
+		this.graphics = createGraphics(listener, config);
+		this.input = createInput(graphics);
 		if (!JoglApplicationConfiguration.disableAudio && Gdx.audio == null) {
 			try {
 		        audio = new OpenALAudio(config.audioDeviceSimultaneousSources, config.audioDeviceBufferCount, config.audioDeviceBufferSize);
@@ -92,20 +74,7 @@ public class JoglApplication implements Application {
 		Gdx.audio = getAudio();
 		Gdx.files = getFiles();
 		Gdx.net = getNet();
-		graphics.create();
-		graphics.getCanvas().addWindowListener(windowListener);
-		graphics.getCanvas().setTitle(config.title);
-		graphics.getCanvas().setSize(config.width, config.height);
-		graphics.getCanvas().setUndecorated(config.fullscreen);
-		graphics.getCanvas().setFullscreen(config.fullscreen);
-		graphics.getCanvas().setVisible(true);
 	}
-
-	WindowAdapter windowListener = new WindowAdapter() {
-		public void windowDestroyed(WindowEvent e) {            
-			end();
-		}
-	};
 	
 	/** {@inheritDoc} */
 	@Override
@@ -152,8 +121,8 @@ public class JoglApplication implements Application {
 		return getJavaHeap();
 	}
 
-	/** @return the GLCanvas of the application. */
-	public GLWindow getGLCanvas () {
+	/** @return the drawable of the application. */
+	public GLAutoDrawable getGLCanvas () {
 		return graphics.getCanvas();
 	}
 
@@ -168,11 +137,6 @@ public class JoglApplication implements Application {
 			preferences.put(name, prefs);
 			return prefs;
 		}
-	}
-
-	@Override
-	public Clipboard getClipboard () {
-		return new JoglNewtClipboard();
 	}
 	
 	@Override

@@ -19,82 +19,54 @@ import java.awt.Canvas;
 import java.awt.Cursor;
 
 import com.badlogic.gdx.ApplicationListener;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.backends.jogamp.audio.OpenALAudio;
 import com.jogamp.newt.awt.NewtCanvasAWT;
 
 /** An OpenGL surface on a NEWT canvas linked to an AWT peer, allowing OpenGL to be embedded in a Swing application
  * 
- * TODO move it into JoglNewtAwtCanvas (use JoglNewtGraphics, JoglAwtCanvas will use JoglAwtGraphics instead)
- * 
  * @author Julien Gouesse 
  * 
  * */
-public class JoglAWTCanvas extends JoglApplication {
+public class JoglNewtAwtCanvas extends JoglNewtApplication {
 	
 	private NewtCanvasAWT canvas;
 
-	public JoglAWTCanvas(final ApplicationListener listener, final String title, final int width, final int height) {
+	public JoglNewtAwtCanvas(final ApplicationListener listener, final String title, final int width, final int height) {
 		this(listener, title, width, height, null);
 	}
 	
-	public JoglAWTCanvas(final ApplicationListener listener, final String title, final int width, final int height, JoglAWTCanvas shared) {
+	public JoglNewtAwtCanvas(final ApplicationListener listener, final String title, final int width, final int height, JoglNewtAwtCanvas shared) {
 		super(listener, title, width, height);
 		if (shared != null) {
 		    getGLCanvas().setSharedContext(shared.getGLCanvas().getContext());
 		}
 	}
 	
-	void initialize (ApplicationListener listener, JoglNewtApplicationConfiguration config) {
-		JoglNativesLoader.load();
-		graphics = new JoglGraphics(listener, config) {
+	@Override
+    protected JoglNewtGraphics createGraphics(ApplicationListener listener, JoglApplicationConfiguration config) {
+		return new JoglNewtGraphics(listener, (JoglNewtApplicationConfiguration) config){
 			public void setTitle (String title) {
 				super.setTitle(title);
-				JoglAWTCanvas.this.setTitle(title);
+				JoglNewtAwtCanvas.this.setTitle(title);
 			}
 
 			public boolean setDisplayMode (int width, int height, boolean fullscreen) {
 				if (!super.setDisplayMode(width, height, fullscreen)) return false;
-				if (!fullscreen) JoglAWTCanvas.this.setDisplayMode(width, height);
+				if (!fullscreen) JoglNewtAwtCanvas.this.setDisplayMode(width, height);
 				return true;
 			}
 
 			public boolean setDisplayMode (DisplayMode displayMode) {
 				if (!super.setDisplayMode(displayMode)) return false;
-				JoglAWTCanvas.this.setDisplayMode(displayMode.width, displayMode.height);
+				JoglNewtAwtCanvas.this.setDisplayMode(displayMode.width, displayMode.height);
 				return true;
 			}
 		};
+	}
+	
+	@Override
+	void initialize (ApplicationListener listener, JoglNewtApplicationConfiguration config) {
+		super.initialize(listener, config);
 		canvas = new NewtCanvasAWT(getGLCanvas());
-		input = new JoglInput(graphics.getCanvas());
-		Gdx.app = this;
-		Gdx.graphics = getGraphics();
-		Gdx.input = getInput();
-		if (!JoglApplicationConfiguration.disableAudio && Gdx.audio == null) {
-			audio = new OpenALAudio();
-			Gdx.audio = audio;
-		} else {
-			audio = null;
-		}
-		if (Gdx.files == null) {
-			files = new JoglFiles();
-			Gdx.files = files;
-		} else {
-			files = null;
-		}
-		if (Gdx.net == null) {
-			net = new JoglNet();
-			Gdx.net = net;
-		} else {
-			net = null;
-		}
-		graphics.create();
-		graphics.getCanvas().addWindowListener(windowListener);
-		graphics.getCanvas().setTitle(config.title);
-		graphics.getCanvas().setSize(config.width, config.height);
-		graphics.getCanvas().setUndecorated(false);
-		graphics.getCanvas().setFullscreen(config.fullscreen);
-		graphics.getCanvas().setVisible(true);
 	}
 	
 	protected void setDisplayMode (int width, int height) {

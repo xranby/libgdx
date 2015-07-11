@@ -21,7 +21,7 @@ import java.util.List;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.backends.jogamp.JoglApplication;
+import com.badlogic.gdx.backends.jogamp.JoglNewtApplication;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -82,6 +82,6 @@ public class LocalJoglTest extends ApplicationAdapter {
 	}
 
 	public static void main (String[] argv) {
-		new JoglApplication(new LocalJoglTest(), "test", 480, 320);
+		new JoglNewtApplication(new LocalJoglTest(), "test", 480, 320);
 	}
 }

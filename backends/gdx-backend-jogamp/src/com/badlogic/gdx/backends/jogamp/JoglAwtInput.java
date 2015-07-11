@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2011 See AUTHORS file.
+ * Copyright 2015 See AUTHORS file.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.utils.Pool;
 
-public class JoglAWTInput implements Input, MouseMotionListener, MouseListener, MouseWheelListener, KeyListener {
+public class JoglAwtInput implements Input, MouseMotionListener, MouseListener, MouseWheelListener, KeyListener {
 	class KeyEvent {
 		static final int KEY_DOWN = 0;
 		static final int KEY_UP = 1;
@@ -118,7 +118,7 @@ public class JoglAWTInput implements Input, MouseMotionListener, MouseListener, 
 	Robot robot = null;
 	long currentEventTimeStamp;
 
-	public JoglAWTInput (Canvas canvas) {
+	public JoglAwtInput (Canvas canvas) {
 		setListeners(canvas);
 		try {
 			robot = new Robot(GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice());

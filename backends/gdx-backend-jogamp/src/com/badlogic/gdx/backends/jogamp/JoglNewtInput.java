@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2011 See AUTHORS file.
+ * Copyright 2015 See AUTHORS file.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import com.jogamp.nativewindow.util.DimensionImmutable;
 import com.jogamp.nativewindow.util.PixelFormat;
 import com.jogamp.nativewindow.util.PixelRectangle;
 import com.jogamp.nativewindow.util.Point;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -38,7 +37,7 @@ import com.jogamp.newt.event.MouseEvent;
 import com.jogamp.newt.event.MouseListener;
 import com.jogamp.newt.opengl.GLWindow;
 
-public class JoglInput implements Input, MouseListener, KeyListener {
+public class JoglNewtInput implements Input, MouseListener, KeyListener {
 	class KeyEvent {
 		static final int KEY_DOWN = 0;
 		static final int KEY_UP = 1;
@@ -93,7 +92,7 @@ public class JoglInput implements Input, MouseListener, KeyListener {
 	boolean catched = false;
 	long currentEventTimeStamp;
 
-	public JoglInput (GLWindow canvas) {
+	public JoglNewtInput (GLWindow canvas) {
 		setListeners(canvas);
 	}
 

@@ -18,9 +18,10 @@ package com.badlogic.gdx.tests.jogl;
 
 import com.badlogic.gdx.LifecycleListener;
 import com.badlogic.gdx.Preferences;
-import com.badlogic.gdx.backends.jogamp.JoglApplication;
+import com.badlogic.gdx.backends.jogamp.JoglNewtApplication;
 import com.badlogic.gdx.backends.jogamp.JoglApplicationConfiguration;
 import com.badlogic.gdx.backends.jogamp.JoglFiles;
+import com.badlogic.gdx.backends.jogamp.JoglNewtApplicationConfiguration;
 import com.badlogic.gdx.backends.jogamp.JoglPreferences;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.tests.utils.GdxTest;
@@ -60,15 +61,15 @@ public class JoglTestStarter extends JFrame {
 	/** Runs the {@link GdxTest} with the given name.
 	 * @param testName the name of a test class
 	 * @return {@code true} if the test was found and run, {@code false} otherwise */
-	public static JoglApplication runTest (String testName) {
+	public static JoglNewtApplication runTest (String testName) {
 		final GdxTest test = GdxTests.newTest(testName);
 		if (test == null) throw new GdxRuntimeException("Test not found: " + testName);
 
-		final JoglApplicationConfiguration config = new JoglApplicationConfiguration();
+		final JoglNewtApplicationConfiguration config = new JoglNewtApplicationConfiguration();
 		config.width = 640;
 		config.height = 480;
 		config.title = testName;
-		return new JoglApplication(test, config);
+		return new JoglNewtApplication(test, config);
 	}
 
 	class TestList extends JPanel {

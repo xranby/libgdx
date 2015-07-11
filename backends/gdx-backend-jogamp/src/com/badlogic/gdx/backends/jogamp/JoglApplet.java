@@ -25,9 +25,9 @@ import com.jogamp.newt.awt.NewtCanvasAWT;
 
 public class JoglApplet  extends Applet {
 	final Canvas canvas;
-	JoglApplication app;
+	JoglNewtApplication app;
 
-	class JoglAppletApplication extends JoglApplication {
+	class JoglAppletApplication extends JoglNewtApplication {
 
 		public JoglAppletApplication (ApplicationListener listener, JoglNewtApplicationConfiguration config) {
 			super(listener, config);

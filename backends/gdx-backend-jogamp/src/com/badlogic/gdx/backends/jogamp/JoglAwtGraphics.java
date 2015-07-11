@@ -23,14 +23,12 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
-import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Graphics.DisplayMode;
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.awt.GLCanvas;
 
@@ -46,9 +44,9 @@ public class JoglAwtGraphics extends JoglGraphicsBase {
 	private boolean isFullscreen = false;
 
 	public JoglAwtGraphics (ApplicationListener listener, JoglAwtApplicationConfiguration config) {
+		super();
+		this.isFullscreen = config.fullscreen;
 		initialize(listener, config);
-		//getCanvas().setFullscreen(config.fullscreen);
-		//getCanvas().setUndecorated(config.fullscreen);
 		desktopMode = config.getDesktopDisplayMode();
 	}
 	
@@ -97,7 +95,7 @@ public class JoglAwtGraphics extends JoglGraphicsBase {
 	public boolean supportsDisplayModeChange () {
 		GraphicsEnvironment genv = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice device = genv.getDefaultScreenDevice();
-		return device.isFullScreenSupported() /*&& (Gdx.app instanceof JoglApplication)*/;
+		return device.isFullScreenSupported() && (Gdx.app instanceof JoglAwtApplication);
 	}
 
 	protected static class JoglAwtDisplayMode extends DisplayMode {
@@ -185,11 +183,10 @@ public class JoglAwtGraphics extends JoglGraphicsBase {
 
 		initializeGLInstances(canvas);
 		this.canvas = newCanvas;
-		((JoglAWTInput)Gdx.input).setListeners(getCanvas());
+		((JoglAwtInput)Gdx.input).setListeners(getCanvas());
 		getCanvas().requestFocus();
-		//FIXME
-		//newframe.addWindowListener(((JoglApplication)Gdx.app).windowListener);
-		//((JoglApplication)Gdx.app).frame = newframe;
+		newframe.addWindowListener(((JoglAwtApplication)Gdx.app).windowListener);
+		((JoglAwtApplication)Gdx.app).frame = newframe;
 		resume();
 
 		Gdx.app.postRunnable(new Runnable() {
@@ -240,11 +237,10 @@ public class JoglAwtGraphics extends JoglGraphicsBase {
 
 			initializeGLInstances(canvas);
 			this.canvas = newCanvas;
-			((JoglAWTInput)Gdx.input).setListeners(getCanvas());
+			((JoglAwtInput)Gdx.input).setListeners(getCanvas());
 			getCanvas().requestFocus();
-			//FIXME
-			//newframe.addWindowListener(((JoglApplication)Gdx.app).windowListener);
-			//((JoglApplication)Gdx.app).frame = newframe;
+			newframe.addWindowListener(((JoglAwtApplication)Gdx.app).windowListener);
+			((JoglAwtApplication)Gdx.app).frame = newframe;
 			resume();
 
 			Gdx.app.postRunnable(new Runnable() {

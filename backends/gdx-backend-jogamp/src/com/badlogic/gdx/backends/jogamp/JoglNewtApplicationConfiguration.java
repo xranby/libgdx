@@ -18,7 +18,7 @@ package com.badlogic.gdx.backends.jogamp;
 import java.util.List;
 
 import com.badlogic.gdx.Graphics.DisplayMode;
-import com.badlogic.gdx.backends.jogamp.JoglGraphics.JoglNewtDisplayMode;
+import com.badlogic.gdx.backends.jogamp.JoglNewtGraphics.JoglNewtDisplayMode;
 import com.jogamp.nativewindow.util.DimensionImmutable;
 import com.jogamp.newt.Display;
 import com.jogamp.newt.MonitorMode;
@@ -27,6 +27,14 @@ import com.jogamp.newt.Screen;
 
 public class JoglNewtApplicationConfiguration extends JoglApplicationConfiguration {
 
+	public JoglNewtApplicationConfiguration() {
+		super();
+	}
+	
+	public JoglNewtApplicationConfiguration(final String title, final int width, final int height) {
+		super(title, width, height);
+	}
+	
 	@Override
 	public DisplayMode[] getDisplayModes() {
         Display display = NewtFactory.createDisplay(null);

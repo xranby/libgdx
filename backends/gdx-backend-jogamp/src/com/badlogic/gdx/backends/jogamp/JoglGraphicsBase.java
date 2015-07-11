@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2011 See AUTHORS file.
+ * Copyright 2015 See AUTHORS file.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -156,10 +156,10 @@ public abstract class JoglGraphicsBase implements Graphics, GLEventListener {
 	public void display (GLAutoDrawable arg0) {
 		synchronized (this) {
 			if (!paused) {
-				final boolean shouldRender = ((JoglApplication)Gdx.app).executeRunnables() | shouldRender();
+				final boolean shouldRender = ((JoglNewtApplication)Gdx.app).executeRunnables() | shouldRender();
 				if (shouldRender) {
 					updateTime();
-					((JoglInput) (Gdx.input)).processEvents();
+					((JoglNewtInput) (Gdx.input)).processEvents();
 					frameId++;
 					listener.render();
 					((OpenALAudio) Gdx.audio).update();

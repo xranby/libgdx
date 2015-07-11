@@ -25,6 +25,14 @@ import com.badlogic.gdx.Graphics.DisplayMode;
 
 public class JoglAwtApplicationConfiguration extends JoglApplicationConfiguration {
 
+	public JoglAwtApplicationConfiguration() {
+		super();
+	}
+	
+	public JoglAwtApplicationConfiguration(final String title, final int width, final int height) {
+		super(title, width, height);
+	}
+	
 	@Override
 	public JoglAwtDisplayMode getDesktopDisplayMode () {
 		GraphicsEnvironment genv = GraphicsEnvironment.getLocalGraphicsEnvironment();

@@ -31,14 +31,14 @@ import com.jogamp.newt.util.MonitorModeUtil;
 /** Implements the {@link Graphics} interface with Jogl.
  * 
  * @author mzechner */
-public class JoglGraphics extends JoglGraphicsBase {
+public class JoglNewtGraphics extends JoglGraphicsBase {
 	/**
 	 * TODO move most of the code into a separate NEWT JoglGraphicsBase implementation and into a NEWT JoglApplicationConfiguration implementation,
 	 * implement getDesktopDisplayMode() and move getDisplayModes() into the latter
 	 */
 	final JoglNewtDisplayMode desktopMode;
 
-	public JoglGraphics (ApplicationListener listener, JoglNewtApplicationConfiguration config) {
+	public JoglNewtGraphics (ApplicationListener listener, JoglNewtApplicationConfiguration config) {
 		initialize(listener, config);
 		getCanvas().setFullscreen(config.fullscreen);
 		getCanvas().setUndecorated(config.fullscreen);

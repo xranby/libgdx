@@ -16,8 +16,9 @@
 
 package com.badlogic.gdx.tests.jogl;
 
-import com.badlogic.gdx.backends.jogamp.JoglApplication;
+import com.badlogic.gdx.backends.jogamp.JoglNewtApplication;
 import com.badlogic.gdx.backends.jogamp.JoglApplicationConfiguration;
+import com.badlogic.gdx.backends.jogamp.JoglNewtApplicationConfiguration;
 import com.badlogic.gdx.tests.superkoalio.SuperKoalio;
 import com.badlogic.gdx.tests.utils.GdxTest;
 import com.badlogic.gdx.utils.SharedLibraryLoader;
@@ -33,8 +34,8 @@ public class JoglDebugStarter {
 		new SharedLibraryLoader("../../gdx/libs/gdx-natives.jar").load("gdx");
 
 		GdxTest test = new SuperKoalio();
-		JoglApplicationConfiguration config = new JoglApplicationConfiguration();
+		JoglNewtApplicationConfiguration config = new JoglNewtApplicationConfiguration();
 		config.vSyncEnabled = true;
-		new JoglApplication(test, config);
+		new JoglNewtApplication(test, config);
 	}
 }

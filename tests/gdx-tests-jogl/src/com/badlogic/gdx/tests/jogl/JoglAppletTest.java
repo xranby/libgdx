@@ -18,6 +18,8 @@ package com.badlogic.gdx.tests.jogl;
 
 import com.badlogic.gdx.backends.jogamp.JoglApplet;
 import com.badlogic.gdx.backends.jogamp.JoglApplicationConfiguration;
+import com.badlogic.gdx.backends.jogamp.JoglAwtApplicationConfiguration;
+import com.badlogic.gdx.backends.jogamp.JoglNewtApplicationConfiguration;
 import com.badlogic.gdx.tests.AnimationTest;
 
 public class JoglAppletTest extends JoglApplet {
@@ -25,8 +27,8 @@ public class JoglAppletTest extends JoglApplet {
 		super(new AnimationTest(), createConfig());
 	}
 	
-	private static JoglApplicationConfiguration createConfig() {
-		JoglApplicationConfiguration config = new JoglApplicationConfiguration();
+	private static JoglNewtApplicationConfiguration createConfig() {
+		JoglNewtApplicationConfiguration config = new JoglNewtApplicationConfiguration();
 		return(config);
 	}
 }
