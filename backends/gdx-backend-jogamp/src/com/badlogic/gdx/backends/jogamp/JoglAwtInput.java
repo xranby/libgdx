@@ -17,7 +17,6 @@
 package com.badlogic.gdx.backends.jogamp;
 
 import java.awt.AWTException;
-import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -113,13 +112,13 @@ public class JoglAwtInput implements Input, MouseMotionListener, MouseListener, 
 	Set<Integer> keys = new HashSet<Integer>();
 	Set<Integer> pressedButtons = new HashSet<Integer>();
 	InputProcessor processor;
-	Canvas canvas;
+	Component component;
 	boolean catched = false;
 	Robot robot = null;
 	long currentEventTimeStamp;
 
-	public JoglAwtInput (Canvas canvas) {
-		setListeners(canvas);
+	public JoglAwtInput (Component component) {
+		setListeners(component);
 		try {
 			robot = new Robot(GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice());
 		} catch (HeadlessException e) {
@@ -127,19 +126,19 @@ public class JoglAwtInput implements Input, MouseMotionListener, MouseListener, 
 		}
 	}
 
-	public void setListeners (Canvas canvas) {
-		if (this.canvas != null) {
-			canvas.removeMouseListener(this);
-			canvas.removeMouseMotionListener(this);
-			canvas.removeMouseWheelListener(this);
-			canvas.removeKeyListener(this);
+	public void setListeners (Component component) {
+		if (this.component != null) {
+			component.removeMouseListener(this);
+			component.removeMouseMotionListener(this);
+			component.removeMouseWheelListener(this);
+			component.removeKeyListener(this);
 		}
-		canvas.addMouseListener(this);
-		canvas.addMouseMotionListener(this);
-		canvas.addMouseWheelListener(this);
-		canvas.addKeyListener(this);
-		canvas.setFocusTraversalKeysEnabled(false);
-		this.canvas = canvas;
+		component.addMouseListener(this);
+		component.addMouseMotionListener(this);
+		component.addMouseWheelListener(this);
+		component.addKeyListener(this);
+		component.setFocusTraversalKeysEnabled(false);
+		this.component = component;
 	}
 
 	@Override
@@ -451,10 +450,10 @@ public class JoglAwtInput implements Input, MouseMotionListener, MouseListener, 
 	}
 
 	private void checkCatched (MouseEvent e) {
-		if (catched && robot != null && canvas.isShowing()) {
-			int x = Math.max(0, Math.min(e.getX(), canvas.getWidth()) - 1) + canvas.getLocationOnScreen().x;
-			int y = Math.max(0, Math.min(e.getY(), canvas.getHeight()) - 1) + canvas.getLocationOnScreen().y;
-			if (e.getX() < 0 || e.getX() >= canvas.getWidth() || e.getY() < 0 || e.getY() >= canvas.getHeight()) {
+		if (catched && robot != null && component.isShowing()) {
+			int x = Math.max(0, Math.min(e.getX(), component.getWidth()) - 1) + component.getLocationOnScreen().x;
+			int y = Math.max(0, Math.min(e.getY(), component.getHeight()) - 1) + component.getLocationOnScreen().y;
+			if (e.getX() < 0 || e.getX() >= component.getWidth() || e.getY() < 0 || e.getY() >= component.getHeight()) {
 				robot.mouseMove(x, y);
 			}
 		}
@@ -734,10 +733,10 @@ public class JoglAwtInput implements Input, MouseMotionListener, MouseListener, 
 			Toolkit t = Toolkit.getDefaultToolkit();
 			Image i = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
 			Cursor noCursor = t.createCustomCursor(i, new Point(0, 0), "none");
-			JFrame frame = findJFrame(canvas);
+			JFrame frame = findJFrame(component);
 			frame.setCursor(noCursor);
 		} else {
-			JFrame frame = findJFrame(canvas);
+			JFrame frame = findJFrame(component);
 			frame.setCursor(Cursor.getDefaultCursor());
 		}
 	}
@@ -784,7 +783,7 @@ public class JoglAwtInput implements Input, MouseMotionListener, MouseListener, 
 	@Override
 	public void setCursorPosition (int x, int y) {
 		if (robot != null) {
-			robot.mouseMove(canvas.getLocationOnScreen().x + x, canvas.getLocationOnScreen().y + y);
+			robot.mouseMove(component.getLocationOnScreen().x + x, component.getLocationOnScreen().y + y);
 		}
 	}
 

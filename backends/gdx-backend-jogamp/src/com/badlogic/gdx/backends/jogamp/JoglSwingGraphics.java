@@ -20,40 +20,36 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.Frame;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.backends.jogamp.JoglAwtGraphics.JoglAwtDisplayMode;
 import com.jogamp.opengl.GLCapabilities;
-import com.jogamp.opengl.awt.GLCanvas;
+import com.jogamp.opengl.awt.GLJPanel;
 
-/**
- * 
- * @author Julien Gouesse
- *
- */
-public class JoglAwtGraphics extends JoglGraphicsBase {
-
-	private final JoglAwtDisplayMode desktopMode;
+public class JoglSwingGraphics extends JoglGraphicsBase {
+	
+    private final JoglAwtDisplayMode desktopMode;
 	
 	private boolean isFullscreen = false;
 
-	public JoglAwtGraphics (ApplicationListener listener, JoglAwtApplicationConfiguration config) {
+	public JoglSwingGraphics (ApplicationListener listener, JoglAwtApplicationConfiguration config) {
 		super();
 		this.isFullscreen = config.fullscreen;
 		initialize(listener, config);
 		desktopMode = config.getDesktopDisplayMode();
 	}
 	
-	protected GLCanvas createCanvas(final GLCapabilities caps) {
-		return new GLCanvas(caps);
+	protected GLJPanel createCanvas(final GLCapabilities caps) {
+		return new GLJPanel(caps);
 	}
 	
-	GLCanvas getCanvas () {
-		return (GLCanvas) super.getCanvas();
+	GLJPanel getCanvas () {
+		return (GLJPanel) super.getCanvas();
 	}
 	
 	@Override
@@ -96,18 +92,9 @@ public class JoglAwtGraphics extends JoglGraphicsBase {
 		return device.isFullScreenSupported() && (Gdx.app instanceof JoglAwtApplication);
 	}
 
-	protected static class JoglAwtDisplayMode extends DisplayMode {
-		final java.awt.DisplayMode mode;
-
-		protected JoglAwtDisplayMode (int width, int height, int refreshRate, int bitsPerPixel, java.awt.DisplayMode mode) {
-			super(width, height, refreshRate, bitsPerPixel);
-			this.mode = mode;
-		}
-	}
-
 	@Override
 	public void setTitle (String title) {
-		final Frame frame = findFrame(getCanvas());
+		final JFrame frame = findJFrame(getCanvas());
 		if (frame != null) {
 		    frame.setTitle(title);
 		}
@@ -157,21 +144,22 @@ public class JoglAwtGraphics extends JoglGraphicsBase {
 
 		GraphicsEnvironment genv = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice device = genv.getDefaultScreenDevice();
-		final Frame frame = findFrame(getCanvas());
+		final JFrame frame = findJFrame(getCanvas());
 		if (frame == null) return false;
 
 		// create new canvas, sharing the rendering context with the old canvas
 		// and pause the animator
 		super.pause();
-		GLCanvas newCanvas = new GLCanvas(canvas.getChosenGLCapabilities(), null, device);
+		GLJPanel newCanvas = new GLJPanel(canvas.getChosenGLCapabilities(), null/*, device*/);
 		newCanvas.setSharedContext(canvas.getContext());
 		newCanvas.addGLEventListener(this);
 
-		Frame newframe = new Frame(frame.getTitle());
+		JFrame newframe = new JFrame(frame.getTitle());
 		newframe.setUndecorated(true);
 		newframe.setResizable(false);
 		newframe.add(newCanvas, BorderLayout.CENTER);
 		newframe.setLocationRelativeTo(null);
+		newframe.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		newframe.pack();
 		newframe.setVisible(true);
 
@@ -188,7 +176,7 @@ public class JoglAwtGraphics extends JoglGraphicsBase {
 
 		Gdx.app.postRunnable(new Runnable() {
 			public void run () {
-				EventQueue.invokeLater(new Runnable() {
+				SwingUtilities.invokeLater(new Runnable() {
 					@Override
 					public void run () {
 						frame.dispose();
@@ -209,25 +197,26 @@ public class JoglAwtGraphics extends JoglGraphicsBase {
 			device.setDisplayMode(desktopMode.mode);
 			device.setFullScreenWindow(null);
 
-			final Frame frame = findFrame(getCanvas());
+			final JFrame frame = findJFrame(getCanvas());
 			if (frame == null) return false;
 
 			// create new canvas, sharing the rendering context with the old canvas
 			// and pause the animator
 			super.pause();
-			GLCanvas newCanvas = new GLCanvas(canvas.getChosenGLCapabilities(), null, device);
+			GLJPanel newCanvas = new GLJPanel(canvas.getChosenGLCapabilities(), null/*, device*/);
 			newCanvas.setSharedContext(canvas.getContext());
 			newCanvas.setBackground(Color.BLACK);
 			newCanvas.setPreferredSize(new Dimension(width, height));
 			newCanvas.addGLEventListener(this);
 
-			Frame newframe = new Frame(frame.getTitle());
+			JFrame newframe = new JFrame(frame.getTitle());
 			newframe.setUndecorated(false);
 			newframe.setResizable(true);
 			newframe.setSize(width + newframe.getInsets().left + newframe.getInsets().right,
 				newframe.getInsets().top + newframe.getInsets().bottom + height);
 			newframe.add(newCanvas, BorderLayout.CENTER);
 			newframe.setLocationRelativeTo(null);
+			newframe.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			newframe.pack();
 			newframe.setVisible(true);
 
@@ -241,7 +230,7 @@ public class JoglAwtGraphics extends JoglGraphicsBase {
 
 			Gdx.app.postRunnable(new Runnable() {
 				public void run () {
-					EventQueue.invokeLater(new Runnable() {
+					SwingUtilities.invokeLater(new Runnable() {
 						@Override
 						public void run () {
 							frame.dispose();
@@ -250,7 +239,7 @@ public class JoglAwtGraphics extends JoglGraphicsBase {
 				}
 			});
 		} else {
-			final Frame frame = findFrame(getCanvas());
+			final JFrame frame = findJFrame(getCanvas());
 			if (frame == null) return false;
 			frame.setSize(width + frame.getInsets().left + frame.getInsets().right, frame.getInsets().top + frame.getInsets().bottom
 				+ height);
@@ -259,15 +248,16 @@ public class JoglAwtGraphics extends JoglGraphicsBase {
 		return true;
 	}
 
-	protected static Frame findFrame (Component component) {
+	protected static JFrame findJFrame (Component component) {
 		Container parent = component.getParent();
 		while (parent != null) {
-			if (parent instanceof Frame) {
-				return (Frame)parent;
+			if (parent instanceof JFrame) {
+				return (JFrame)parent;
 			}
 			parent = parent.getParent();
 		}
 
 		return null;
 	}
+
 }
