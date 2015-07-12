@@ -36,7 +36,7 @@ public class JoglNewtAwtCanvas extends JoglNewtApplication {
 	
 	public JoglNewtAwtCanvas(final ApplicationListener listener, final String title, final int width, final int height, JoglNewtAwtCanvas shared) {
 		super(listener, title, width, height);
-		if (shared != null) {
+		if (shared != null && shared.getGLCanvas().getContext() != null) {
 		    getGLCanvas().setSharedContext(shared.getGLCanvas().getContext());
 		}
 	}
