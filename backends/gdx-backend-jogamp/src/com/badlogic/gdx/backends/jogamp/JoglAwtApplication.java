@@ -47,15 +47,10 @@ public class JoglAwtApplication extends JoglApplicationBase {
 
 	public JoglAwtApplication (final ApplicationListener listener, final JoglAwtApplicationConfiguration config) {
 		super(listener, config);
-	}
-	
-	@Override
-	void initialize (final ApplicationListener listener, final JoglApplicationConfiguration config) {
 		final Runnable runnable = new Runnable() {
 
 			@Override
 			public void run() {
-				JoglAwtApplication.super.initialize(listener, config);
 				if (!config.fullscreen) {
 					frame = new Frame(config.title);
 					((JoglAwtGraphics)graphics).getCanvas().setPreferredSize(new Dimension(config.width, config.height));
@@ -67,7 +62,7 @@ public class JoglAwtApplication extends JoglApplicationBase {
 
 					frame.pack();
 					frame.setVisible(true);
-					graphics.create();
+					//graphics.create();
 				} else {
 					GraphicsEnvironment genv = GraphicsEnvironment.getLocalGraphicsEnvironment();
 					GraphicsDevice device = genv.getDefaultScreenDevice();
@@ -97,7 +92,7 @@ public class JoglAwtApplication extends JoglApplicationBase {
 						audio.dispose();
 						System.exit(-1);
 					}
-					graphics.create();
+					//graphics.create();
 				}
 			}
 		};

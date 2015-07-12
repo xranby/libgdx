@@ -43,6 +43,12 @@ public class JoglNewtApplication extends JoglApplicationBase {
 
 	public JoglNewtApplication (final ApplicationListener listener, final JoglNewtApplicationConfiguration config) {
 		super(listener, config);
+		((JoglNewtGraphics)graphics).getCanvas().addWindowListener(windowListener);
+		((JoglNewtGraphics)graphics).getCanvas().setTitle(config.title);
+		((JoglNewtGraphics)graphics).getCanvas().setSize(config.width, config.height);
+		((JoglNewtGraphics)graphics).getCanvas().setUndecorated(config.fullscreen);
+		((JoglNewtGraphics)graphics).getCanvas().setFullscreen(config.fullscreen);
+		((JoglNewtGraphics)graphics).getCanvas().setVisible(true);
 	}
 
 	@Override
@@ -53,17 +59,6 @@ public class JoglNewtApplication extends JoglApplicationBase {
 	@Override
 	protected Input createInput(JoglGraphicsBase graphics) {
 		return new JoglNewtInput(((JoglNewtGraphics)graphics).getCanvas());
-	}
-	
-	void initialize (ApplicationListener listener, JoglNewtApplicationConfiguration config) {
-		super.initialize(listener, config);
-		graphics.create();
-		((JoglNewtGraphics)graphics).getCanvas().addWindowListener(windowListener);
-		((JoglNewtGraphics)graphics).getCanvas().setTitle(config.title);
-		((JoglNewtGraphics)graphics).getCanvas().setSize(config.width, config.height);
-		((JoglNewtGraphics)graphics).getCanvas().setUndecorated(config.fullscreen);
-		((JoglNewtGraphics)graphics).getCanvas().setFullscreen(config.fullscreen);
-		((JoglNewtGraphics)graphics).getCanvas().setVisible(true);
 	}
 
 	WindowAdapter windowListener = new WindowAdapter() {

@@ -36,9 +36,11 @@ public class JoglNewtAwtCanvas extends JoglNewtApplication {
 	
 	public JoglNewtAwtCanvas(final ApplicationListener listener, final String title, final int width, final int height, JoglNewtAwtCanvas shared) {
 		super(listener, title, width, height);
-		if (shared != null && shared.getGLCanvas().getContext() != null) {
+		//FIXME it is too early to get the canvas. It was working with JOGL 1 but the context is available later with JOGL 2
+		/*if (shared != null && shared.getGLCanvas().getContext() != null) {
 		    getGLCanvas().setSharedContext(shared.getGLCanvas().getContext());
-		}
+		}*/
+		canvas = new NewtCanvasAWT(getGLCanvas());
 	}
 	
 	@Override
@@ -61,12 +63,6 @@ public class JoglNewtAwtCanvas extends JoglNewtApplication {
 				return true;
 			}
 		};
-	}
-	
-	@Override
-	void initialize (ApplicationListener listener, JoglNewtApplicationConfiguration config) {
-		super.initialize(listener, config);
-		canvas = new NewtCanvasAWT(getGLCanvas());
 	}
 	
 	protected void setDisplayMode (int width, int height) {

@@ -44,14 +44,6 @@ public abstract class JoglApplicationBase implements Application {
 
 	public JoglApplicationBase (final ApplicationListener listener, final JoglApplicationConfiguration config) {
 		super();
-		initialize(listener, config);
-	}
-
-	protected abstract JoglGraphicsBase createGraphics(ApplicationListener listener, JoglApplicationConfiguration config);
-	
-	protected abstract Input createInput(JoglGraphicsBase graphics);
-	
-	void initialize (ApplicationListener listener, JoglApplicationConfiguration config) {
 		JoglNativesLoader.load();
 		this.listener = listener;
 		this.graphics = createGraphics(listener, config);
@@ -74,7 +66,12 @@ public abstract class JoglApplicationBase implements Application {
 		Gdx.audio = getAudio();
 		Gdx.files = getFiles();
 		Gdx.net = getNet();
+		graphics.create();
 	}
+
+	protected abstract JoglGraphicsBase createGraphics(ApplicationListener listener, JoglApplicationConfiguration config);
+	
+	protected abstract Input createInput(JoglGraphicsBase graphics);
 	
 	/** {@inheritDoc} */
 	@Override
