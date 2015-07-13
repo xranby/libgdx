@@ -2,7 +2,7 @@
 <project name="fetch-natives" default="all">
 	<property name="domain" value="http://libgdx.badlogicgames.com/nightlies/dist"/>
     <property name="robovm" value="http://libgdx.badlogicgames.com/robovm/robovm/lib/"/>
-    <property name="jogamp" value="http://jogamp.org/deployment/archive/master/gluegen_761-joal_511-jogl_1200-jocl_903-signed/jar/"/>
+    <property name="jogamp" value="http://jogamp.org/deployment/v2.3.1/jar/"/>
     <!--<property name="jogamp" value="http://jogamp.org/deployment/jogamp-current/jar/"/>-->
     
     <target name="fetch-jogl">
