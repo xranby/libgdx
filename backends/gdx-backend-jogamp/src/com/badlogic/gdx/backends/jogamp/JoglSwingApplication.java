@@ -52,7 +52,6 @@ public class JoglSwingApplication extends JoglApplicationBase {
 
 			@Override
 			public void run() {
-				//JoglSwingApplication.super.initialize(listener, config);
 				if (!config.fullscreen) {
 					frame = new JFrame(config.title);
 					((JoglSwingGraphics)graphics).getCanvas().setPreferredSize(new Dimension(config.width, config.height));
@@ -64,7 +63,6 @@ public class JoglSwingApplication extends JoglApplicationBase {
 					frame.addWindowListener(windowListener);
 					frame.pack();
 					frame.setVisible(true);
-					//graphics.create();
 				} else {
 					GraphicsEnvironment genv = GraphicsEnvironment.getLocalGraphicsEnvironment();
 					GraphicsDevice device = genv.getDefaultScreenDevice();
@@ -95,7 +93,6 @@ public class JoglSwingApplication extends JoglApplicationBase {
 						audio.dispose();
 						System.exit(-1);
 					}
-					//graphics.create();
 				}
 			}
 		};
