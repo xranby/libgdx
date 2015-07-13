@@ -6,6 +6,7 @@ ext {
 	androidVersion = "4.4"
 	gwtVersion = "2.6.0"
 	jglfwVersion = "1.1"
+	jogampVersion = "2.3.1"
 	lwjglVersion = "2.9.2"
 	jlayerVersion = "1.0.1-gdx"
 	jorbisVersion = "0.0.17"
@@ -30,6 +31,7 @@ configure(allprojects - project(':tests:gdx-tests-android')) {
 	repositories {
 		mavenCentral()
 		maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+		maven { url "http://jogamp.org/deployment/maven" }
 	}
 
 	group = GROUPID
@@ -67,6 +69,17 @@ project(":backends:gdx-backend-jglfw") {
 		compile project(":gdx")
 		compile "com.badlogicgames.jglfw:jglfw:$jglfwVersion"
 		compile "com.badlogicgames.jglfw:jglfw-platform:$jglfwVersion:natives-desktop"
+	}
+}
+
+project(":backends:gdx-backend-jogamp") {
+	dependencies {
+		compile project(":gdx")
+		compile "org.jogamp.gluegen:gluegen-rt-main:$jogampVersion"
+		compile "org.jogamp.joal:joal-main:$jogampVersion"
+                compile "org.jogamp.jogl:jogl-all-main:$jogampVersion"
+		compile "com.badlogicgames.jlayer:jlayer:$jlayerVersion"
+		compile "org.jcraft:jorbis:$jorbisVersion"
 	}
 }
 
@@ -253,6 +266,31 @@ project(":tests:gdx-tests-jglfw") {
 		compile files("../../extensions/gdx-freetype/libs/gdx-freetype-natives.jar")
 	}
 	
+	eclipse.project.linkedResource name: 'assets', type: '2', location: 'PARENT-1-PROJECT_LOC/gdx-tests-android/assets'
+	task afterEclipseImport(description: "Post processing after project generation", group: "IDE") {
+		doLast {
+			def classpath = new XmlParser().parse(file(".classpath"))
+			new Node(classpath, "classpathentry", [ kind: 'src', path: 'assets' ]);
+			def writer = new FileWriter(file(".classpath"))
+			def printer = new XmlNodePrinter(new PrintWriter(writer))
+			printer.setPreserveWhitespace(true)
+			printer.print(classpath)
+		}
+	}
+}
+
+project(":tests:gdx-tests-jogamp") {
+	dependencies {
+		compile project(":tests:gdx-tests")
+		compile project(":backends:gdx-backend-jogamp")
+		compile files("../../gdx/libs/gdx-natives.jar")
+		compile files("../../extensions/gdx-box2d/gdx-box2d/libs/gdx-box2d-natives.jar")
+		compile files("../../extensions/gdx-bullet/libs/gdx-bullet-natives.jar")
+		compile files("../../extensions/gdx-controllers/gdx-controllers-desktop/libs/gdx-controllers-desktop-natives.jar")
+		compile project(":extensions:gdx-controllers:gdx-controllers-desktop")
+		compile files("../../extensions/gdx-freetype/libs/gdx-freetype-natives.jar")
+	}
+
 	eclipse.project.linkedResource name: 'assets', type: '2', location: 'PARENT-1-PROJECT_LOC/gdx-tests-android/assets'
 	task afterEclipseImport(description: "Post processing after project generation", group: "IDE") {
 		doLast {

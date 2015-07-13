@@ -5,47 +5,41 @@
     <property name="jogamp" value="http://jogamp.org/deployment/v2.3.1/jar/"/>
     <!--<property name="jogamp" value="http://jogamp.org/deployment/jogamp-current/jar/"/>-->
     
-    <target name="fetch-jogl">
-        <mkdir dir="backends/gdx-backend-jogl/libs/"/>
-        <get src="${jogamp}/jogl-all.jar" dest="backends/gdx-backend-jogl/libs/"/>
-        <get src="${jogamp}/jogl-all-natives-linux-amd64.jar" dest="backends/gdx-backend-jogl/libs/"/>
-        <get src="${jogamp}/jogl-all-natives-linux-armv6hf.jar" dest="backends/gdx-backend-jogl/libs/"/>
-        <get src="${jogamp}/jogl-all-natives-linux-armv6.jar" dest="backends/gdx-backend-jogl/libs/"/>
-        <get src="${jogamp}/jogl-all-natives-linux-i586.jar" dest="backends/gdx-backend-jogl/libs/"/>
-        <get src="${jogamp}/jogl-all-natives-macosx-universal.jar" dest="backends/gdx-backend-jogl/libs/"/>
-        <get src="${jogamp}/jogl-all-natives-solaris-amd64.jar" dest="backends/gdx-backend-jogl/libs/"/>
-        <get src="${jogamp}/jogl-all-natives-solaris-i586.jar" dest="backends/gdx-backend-jogl/libs/"/>
-        <get src="${jogamp}/jogl-all-natives-windows-amd64.jar" dest="backends/gdx-backend-jogl/libs/"/>
-        <get src="${jogamp}/jogl-all-natives-windows-i586.jar" dest="backends/gdx-backend-jogl/libs/"/>
+    <target name="fetch-jogamp">
+        <mkdir dir="backends/gdx-backend-jogamp/libs/"/>
+	<get src="${jogamp}/gluegen-rt.jar" dest="backends/gdx-backend-jogamp/libs/"/>
+        <get src="${jogamp}/gluegen-rt-natives-linux-amd64.jar" dest="backends/gdx-backend-jogamp/libs/"/>
+        <get src="${jogamp}/gluegen-rt-natives-linux-armv6hf.jar" dest="backends/gdx-backend-jogamp/libs/"/>
+        <get src="${jogamp}/gluegen-rt-natives-linux-armv6.jar" dest="backends/gdx-backend-jogamp/libs/"/>
+        <get src="${jogamp}/gluegen-rt-natives-linux-i586.jar" dest="backends/gdx-backend-jogamp/libs/"/>
+        <get src="${jogamp}/gluegen-rt-natives-macosx-universal.jar" dest="backends/gdx-backend-jogamp/libs/"/>
+        <get src="${jogamp}/gluegen-rt-natives-solaris-amd64.jar" dest="backends/gdx-backend-jogamp/libs/"/>
+        <get src="${jogamp}/gluegen-rt-natives-solaris-i586.jar" dest="backends/gdx-backend-jogamp/libs/"/>
+        <get src="${jogamp}/gluegen-rt-natives-windows-amd64.jar" dest="backends/gdx-backend-jogamp/libs/"/>
+        <get src="${jogamp}/gluegen-rt-natives-windows-i586.jar" dest="backends/gdx-backend-jogamp/libs/"/>
+	<get src="${jogamp}/joal.jar" dest="backends/gdx-backend-jogamp/libs"/>
+        <get src="${jogamp}/joal-natives-linux-amd64.jar" dest="backends/gdx-backend-jogamp/libs"/>
+        <get src="${jogamp}/joal-natives-linux-armv6hf.jar" dest="backends/gdx-backend-jogamp/libs"/>
+        <get src="${jogamp}/joal-natives-linux-armv6.jar" dest="backends/gdx-backend-jogamp/libs"/>
+        <get src="${jogamp}/joal-natives-linux-i586.jar" dest="backends/gdx-backend-jogamp/libs"/>
+        <get src="${jogamp}/joal-natives-macosx-universal.jar" dest="backends/gdx-backend-jogamp/libs"/>
+        <get src="${jogamp}/joal-natives-solaris-amd64.jar" dest="backends/gdx-backend-jogamp/libs"/>
+        <get src="${jogamp}/joal-natives-solaris-i586.jar" dest="backends/gdx-backend-jogamp/libs"/>
+        <get src="${jogamp}/joal-natives-windows-amd64.jar" dest="backends/gdx-backend-jogamp/libs"/>
+        <get src="${jogamp}/joal-natives-windows-i586.jar" dest="backends/gdx-backend-jogamp/libs"/>
+        <copy file="backends/gdx-openal/libs/jlayer-1.0.1-libgdx.jar" todir="backends/gdx-backend-jogamp/libs"/>
+        <copy file="backends/gdx-openal/libs/jorbis.jar" todir="backends/gdx-backend-jogamp/libs"/>
+	<get src="${jogamp}/jogl-all.jar" dest="backends/gdx-backend-jogamp/libs/"/>
+        <get src="${jogamp}/jogl-all-natives-linux-amd64.jar" dest="backends/gdx-backend-jogamp/libs/"/>
+        <get src="${jogamp}/jogl-all-natives-linux-armv6hf.jar" dest="backends/gdx-backend-jogamp/libs/"/>
+        <get src="${jogamp}/jogl-all-natives-linux-armv6.jar" dest="backends/gdx-backend-jogamp/libs/"/>
+        <get src="${jogamp}/jogl-all-natives-linux-i586.jar" dest="backends/gdx-backend-jogamp/libs/"/>
+        <get src="${jogamp}/jogl-all-natives-macosx-universal.jar" dest="backends/gdx-backend-jogamp/libs/"/>
+        <get src="${jogamp}/jogl-all-natives-solaris-amd64.jar" dest="backends/gdx-backend-jogamp/libs/"/>
+        <get src="${jogamp}/jogl-all-natives-solaris-i586.jar" dest="backends/gdx-backend-jogamp/libs/"/>
+        <get src="${jogamp}/jogl-all-natives-windows-amd64.jar" dest="backends/gdx-backend-jogamp/libs/"/>
+        <get src="${jogamp}/jogl-all-natives-windows-i586.jar" dest="backends/gdx-backend-jogamp/libs/"/>
      </target>
-     <target name="fetch-jogamp">
-        <mkdir dir="backends/gdx-jogamp/libs/"/>
-        <get src="${jogamp}/gluegen-rt.jar" dest="backends/gdx-jogamp/libs/"/>
-        <get src="${jogamp}/gluegen-rt-natives-linux-amd64.jar" dest="backends/gdx-jogamp/libs/"/>
-        <get src="${jogamp}/gluegen-rt-natives-linux-armv6hf.jar" dest="backends/gdx-jogamp/libs/"/>
-        <get src="${jogamp}/gluegen-rt-natives-linux-armv6.jar" dest="backends/gdx-jogamp/libs/"/>
-        <get src="${jogamp}/gluegen-rt-natives-linux-i586.jar" dest="backends/gdx-jogamp/libs/"/>
-        <get src="${jogamp}/gluegen-rt-natives-macosx-universal.jar" dest="backends/gdx-jogamp/libs/"/>
-        <get src="${jogamp}/gluegen-rt-natives-solaris-amd64.jar" dest="backends/gdx-jogamp/libs/"/>
-        <get src="${jogamp}/gluegen-rt-natives-solaris-i586.jar" dest="backends/gdx-jogamp/libs/"/>
-        <get src="${jogamp}/gluegen-rt-natives-windows-amd64.jar" dest="backends/gdx-jogamp/libs/"/>
-        <get src="${jogamp}/gluegen-rt-natives-windows-i586.jar" dest="backends/gdx-jogamp/libs/"/>
-    </target>
-    <target name="fetch-joal">
-        <mkdir dir="backends/gdx-joal/libs/"/>
-        <get src="${jogamp}/joal.jar" dest="backends/gdx-joal/libs"/>
-        <get src="${jogamp}/joal-natives-linux-amd64.jar" dest="backends/gdx-joal/libs"/>
-        <get src="${jogamp}/joal-natives-linux-armv6hf.jar" dest="backends/gdx-joal/libs"/>
-        <get src="${jogamp}/joal-natives-linux-armv6.jar" dest="backends/gdx-joal/libs"/>
-        <get src="${jogamp}/joal-natives-linux-i586.jar" dest="backends/gdx-joal/libs"/>
-        <get src="${jogamp}/joal-natives-macosx-universal.jar" dest="backends/gdx-joal/libs"/>
-        <get src="${jogamp}/joal-natives-solaris-amd64.jar" dest="backends/gdx-joal/libs"/>
-        <get src="${jogamp}/joal-natives-solaris-i586.jar" dest="backends/gdx-joal/libs"/>
-        <get src="${jogamp}/joal-natives-windows-amd64.jar" dest="backends/gdx-joal/libs"/>
-        <get src="${jogamp}/joal-natives-windows-i586.jar" dest="backends/gdx-joal/libs"/>
-        <copy file="backends/gdx-openal/libs/jlayer-1.0.1-libgdx.jar" todir="backends/gdx-joal/libs"/>
-        <copy file="backends/gdx-openal/libs/jorbis.jar" todir="backends/gdx-joal/libs"/>
-    </target>
 
     <target name="fetch-robovm">
         <mkdir dir="backends/gdx-backend-robovm/libs/"/>
