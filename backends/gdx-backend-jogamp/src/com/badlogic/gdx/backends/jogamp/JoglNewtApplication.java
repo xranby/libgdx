@@ -40,6 +40,10 @@ public class JoglNewtApplication extends JoglApplicationBase {
 	public JoglNewtApplication (final ApplicationListener listener, final String title, final int width, final int height) {
 		this(listener, new JoglNewtApplicationConfiguration(title, width, height));
 	}
+	
+	public JoglNewtApplication (final ApplicationListener listener) {
+		this(listener, null, 640, 480);
+	}
 
 	public JoglNewtApplication (final ApplicationListener listener, final JoglNewtApplicationConfiguration config) {
 		super(listener, config);

@@ -61,7 +61,7 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.utils.Pool;
 
-public class JoglAwtInput implements Input, MouseMotionListener, MouseListener, MouseWheelListener, KeyListener {
+public class JoglAwtInput implements JoglInput, MouseMotionListener, MouseListener, MouseWheelListener, KeyListener {
 	class KeyEvent {
 		static final int KEY_DOWN = 0;
 		static final int KEY_UP = 1;
@@ -309,7 +309,8 @@ public class JoglAwtInput implements Input, MouseMotionListener, MouseListener, 
 			return false;
 	}
 
-	void processEvents () {
+	@Override
+	public void processEvents () {
 		synchronized (this) {
 			justTouched = false;
 

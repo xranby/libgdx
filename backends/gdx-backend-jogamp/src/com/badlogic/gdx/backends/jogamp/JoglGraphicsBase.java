@@ -156,10 +156,10 @@ public abstract class JoglGraphicsBase implements Graphics, GLEventListener {
 	public void display (GLAutoDrawable arg0) {
 		synchronized (this) {
 			if (!paused) {
-				final boolean shouldRender = ((JoglNewtApplication)Gdx.app).executeRunnables() | shouldRender();
+				final boolean shouldRender = ((JoglApplicationBase)Gdx.app).executeRunnables() | shouldRender();
 				if (shouldRender) {
 					updateTime();
-					((JoglNewtInput) (Gdx.input)).processEvents();
+					((JoglInput) (Gdx.input)).processEvents();
 					frameId++;
 					listener.render();
 					((OpenALAudio) Gdx.audio).update();

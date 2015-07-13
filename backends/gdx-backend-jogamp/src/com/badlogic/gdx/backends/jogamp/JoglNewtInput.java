@@ -37,7 +37,7 @@ import com.jogamp.newt.event.MouseEvent;
 import com.jogamp.newt.event.MouseListener;
 import com.jogamp.newt.opengl.GLWindow;
 
-public class JoglNewtInput implements Input, MouseListener, KeyListener {
+public class JoglNewtInput implements JoglInput, MouseListener, KeyListener {
 	class KeyEvent {
 		static final int KEY_DOWN = 0;
 		static final int KEY_UP = 1;
@@ -180,7 +180,8 @@ public class JoglNewtInput implements Input, MouseListener, KeyListener {
 			return false;
 	}
 
-	void processEvents () {
+	@Override
+	public void processEvents () {
 		synchronized (this) {
 			justTouched = false;
 
