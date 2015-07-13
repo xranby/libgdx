@@ -62,7 +62,6 @@ public class JoglAwtApplication extends JoglApplicationBase {
 
 					frame.pack();
 					frame.setVisible(true);
-					//graphics.create();
 				} else {
 					GraphicsEnvironment genv = GraphicsEnvironment.getLocalGraphicsEnvironment();
 					GraphicsDevice device = genv.getDefaultScreenDevice();
@@ -92,7 +91,6 @@ public class JoglAwtApplication extends JoglApplicationBase {
 						audio.dispose();
 						System.exit(-1);
 					}
-					//graphics.create();
 				}
 			}
 		};

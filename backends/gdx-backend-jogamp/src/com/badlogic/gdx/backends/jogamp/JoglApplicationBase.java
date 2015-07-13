@@ -41,6 +41,7 @@ public abstract class JoglApplicationBase implements Application {
 	int logLevel = LOG_INFO;
 	protected ApplicationListener listener;
 	protected final Array<LifecycleListener> lifecycleListeners = new Array<LifecycleListener>();
+	private Thread shutdownHook;
 
 	public JoglApplicationBase (final ApplicationListener listener, final JoglApplicationConfiguration config) {
 		super();
@@ -67,6 +68,23 @@ public abstract class JoglApplicationBase implements Application {
 		Gdx.files = getFiles();
 		Gdx.net = getNet();
 		graphics.create();
+	}
+	
+	/** When true, <code>Runtime.getRuntime().halt(0);</code> is used when the JVM shuts down. This prevents Swing shutdown hooks
+	 * from causing a deadlock and keeping the JVM alive indefinitely. Default is true. */
+	public void setHaltOnShutdown (boolean halt) {
+		if (halt) {
+			if (shutdownHook != null) return;
+			shutdownHook = new Thread() {
+				public void run () {
+					Runtime.getRuntime().halt(0); // Because fuck you, deadlock causing Swing shutdown hooks.
+				}
+			};
+			Runtime.getRuntime().addShutdownHook(shutdownHook);
+		} else if (shutdownHook != null) {
+			Runtime.getRuntime().removeShutdownHook(shutdownHook);
+			shutdownHook = null;
+		}
 	}
 
 	protected abstract JoglGraphicsBase createGraphics(ApplicationListener listener, JoglApplicationConfiguration config);

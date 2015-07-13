@@ -56,11 +56,7 @@ public class JoglNewtAwtFrame extends JFrame {
 		};
 		getContentPane().add(joglNewtAwtCanvas.getCanvas());
 
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			public void run () {
-				Runtime.getRuntime().halt(0); // Because fuck you, deadlock causing Swing shutdown hooks.
-			}
-		});
+		joglNewtAwtCanvas.setHaltOnShutdown(true);
 
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		getContentPane().setPreferredSize(new Dimension(width, height));
