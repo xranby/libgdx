@@ -42,7 +42,6 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <jogamp.version>2.3.1</jogamp.version>
     <android.version>4.4</android.version>
     <gwt.version>2.6.1</gwt.version>
     <lwjgl.version>2.9.2</lwjgl.version>
@@ -55,7 +54,6 @@
     <module>extensions/gdx-jnigen</module>
     <module>gdx</module>
     <module>gdx/jni/maven</module>
-    <module>backends/gdx-backend-jogamp</module>
     <module>backends/gdx-backend-android</module>
     <module>backends/gdx-backend-robovm</module>
     <module>backends/gdx-backend-lwjgl</module>
