@@ -5,7 +5,7 @@ ext {
     androidVersion = "4.4"
     gwtVersion = "2.6.0"
     jglfwVersion = "1.1"
-    jogampVersion = "2.3.1"
+    jogampVersion = "2.3.2-rc-20150812"
     lwjglVersion = "2.9.2"
     jlayerVersion = "1.0.1-gdx"
     jorbisVersion = "0.0.17"
