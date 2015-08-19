@@ -1,3 +1,12 @@
+[1.6.5]
+- Objects from animated tiles in TMX maps are now supported.
+- Made possible to use any actor for tooltips.
+- Improved cross-platform reflection api for annotations.
+- NinePatch#scale now also scales middle patch size.
+- GLFrameBuffer is now abstract, renamed setupTexture to createColorTexture, added disposeColorTexture
+- Added LwjglApplicationConfiguration#gles30Context*Version, see https://github.com/libgdx/libgdx/pull/2941
+- Added OpenGL error checking to GLProfiler, see https://github.com/libgdx/libgdx/pull/2889
+
 [1.6.4]
 - TextField cursor and selection size changed. https://github.com/libgdx/libgdx/commit/2a830dea348948d2a37bd8f6338af2023fec9b09
 - FreeTypeFontGenerator setting to improve shadows and borders.
