@@ -18,6 +18,14 @@
   <issueManagement>
     <url>https://github.com/libgdx/libgdx/issues</url>
   </issueManagement>
+  
+  <repositories>
+      <!-- This repository should be used only for unreleased development versions, typically all release candidates and post builds -->
+      <repository>
+          <id>jogamp</id>
+          <url>http://jogamp.org/deployment/maven</url>
+      </repository>
+  </repositories>
 
   <licenses>
     <license>
