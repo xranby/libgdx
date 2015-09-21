@@ -806,12 +806,6 @@ public class JoglAwtInput implements JoglInput, MouseMotionListener, MouseListen
 	}
 
 	@Override
-	public void setCursorImage(Pixmap pixmap, int xHotspot, int yHotspot) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
 	public boolean isKeyJustPressed(int key) {
 		// TODO Auto-generated method stub
 		return false;

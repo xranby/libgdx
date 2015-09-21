@@ -19,12 +19,19 @@ package com.badlogic.gdx.backends.jogamp;
 import java.util.List;
 
 import com.jogamp.nativewindow.util.Dimension;
+import com.jogamp.nativewindow.util.DimensionImmutable;
+import com.jogamp.nativewindow.util.PixelFormat;
+import com.jogamp.nativewindow.util.PixelRectangle;
 import com.jogamp.opengl.GLCapabilities;
 import com.badlogic.gdx.ApplicationListener;
+import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.jogamp.newt.MonitorDevice;
 import com.jogamp.newt.MonitorMode;
+import com.jogamp.newt.Display.PointerIcon;
 import com.jogamp.newt.opengl.GLWindow;
 import com.jogamp.newt.util.MonitorModeUtil;
 
@@ -151,5 +158,19 @@ public class JoglNewtGraphics extends JoglGraphicsBase {
 	@Override
 	public boolean isFullscreen () {
 		return getCanvas().isFullscreen();
+	}
+
+	@Override
+	public void setCursor(Cursor cursor) {
+		if (cursor == null) {
+			getCanvas().setPointerIcon(null);
+		} else {
+			cursor.setSystemCursor();
+		}
+	}
+	
+	@Override
+	public Cursor newCursor(Pixmap pixmap, int xHotspot, int yHotspot) {
+		return new JoglNewtCursor(pixmap, xHotspot, yHotspot, getCanvas());
 	}
 }

@@ -22,12 +22,15 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.jogamp.JoglAwtGraphics.JoglAwtDisplayMode;
+import com.badlogic.gdx.graphics.Cursor;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.awt.GLJPanel;
 
@@ -258,6 +261,15 @@ public class JoglSwingGraphics extends JoglGraphicsBase {
 		}
 
 		return null;
+	}
+
+	@Override
+	public Cursor newCursor(Pixmap pixmap, int xHotspot, int yHotspot) {
+		return null;
+	}
+
+	@Override
+	public void setCursor(Cursor cursor) {
 	}
 
 }

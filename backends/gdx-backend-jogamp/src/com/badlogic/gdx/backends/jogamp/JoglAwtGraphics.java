@@ -27,6 +27,8 @@ import java.awt.GraphicsEnvironment;
 
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Cursor;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.awt.GLCanvas;
 
@@ -269,5 +271,14 @@ public class JoglAwtGraphics extends JoglGraphicsBase {
 		}
 
 		return null;
+	}
+
+	@Override
+	public Cursor newCursor(Pixmap pixmap, int xHotspot, int yHotspot) {
+		return null;
+	}
+
+	@Override
+	public void setCursor(Cursor cursor) {
 	}
 }

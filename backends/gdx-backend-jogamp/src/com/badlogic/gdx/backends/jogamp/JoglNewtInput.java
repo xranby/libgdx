@@ -650,40 +650,6 @@ public class JoglNewtInput implements JoglInput, MouseListener, KeyListener {
 	@Override
 	public void getRotationMatrix (float[] matrix) {
 	}
-
-	@Override
-	public void setCursorImage(Pixmap pixmap, int xHotspot, int yHotspot) {
-		if (xHotspot < 0 || xHotspot >= pixmap.getWidth()) {
-	        throw new GdxRuntimeException ("xHotspot coordinate of " + xHotspot  + " is not within image width bounds: [0, " + pixmap.getWidth() + ").");
-	    }
-
-	    if (yHotspot < 0 || yHotspot >= pixmap.getHeight()) {
-	        throw new GdxRuntimeException ("yHotspot coordinate of " + yHotspot  + " is not within image height bounds: [0, " + pixmap.getHeight() + ").");
-	    }
-		final DimensionImmutable size = new Dimension(pixmap.getWidth(), pixmap.getHeight());
-		PixelFormat pixFormat = null;
-        switch(pixmap.getFormat()) {
-        case Alpha:
-        	break;
-        case Intensity:
-        	break;
-        case LuminanceAlpha:
-        	break;
-        case RGB565:
-        	break;
-        case RGB888:
-        	pixFormat = PixelFormat.RGB888;
-        	break;
-        case RGBA4444:
-        	break;
-        case RGBA8888:
-        	pixFormat = PixelFormat.RGBA8888;
-        	break;
-        }
-		PixelRectangle.GenericPixelRect rec = new PixelRectangle.GenericPixelRect(pixFormat, size, 0, true, pixmap.getPixels());
-		PointerIcon joglCursor = canvas.getScreen().getDisplay().createPointerIcon(rec, xHotspot, yHotspot);
-		canvas.setPointerIcon(joglCursor);
-	}
 	
 	@Override
 	public boolean isKeyJustPressed(int key) {
