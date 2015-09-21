@@ -28,6 +28,8 @@ configure(allprojects - project(':tests:gdx-tests-android')) {
     apply plugin: "idea"
     apply plugin: "java"
 
+    compileJava.options.encoding = 'UTF-8';
+
     repositories {
         mavenCentral()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
@@ -240,6 +242,7 @@ project(":tests:gdx-tests-android") {
     dependencies {
         compile project(":tests:gdx-tests")
         compile project(":backends:gdx-backend-android")
+        compile "com.android.support:support-v4:+"
     }
 }
 
@@ -343,4 +346,10 @@ if (JavaVersion.current().isJava8Compatible()) {
             options.addStringOption("Xdoclint:none", "-quiet")
         }
     }
+}
+
+task fetchNatives << {
+    ant.importBuild "fetch.xml"
+    fetch.execute()
+    copy.execute()
 }

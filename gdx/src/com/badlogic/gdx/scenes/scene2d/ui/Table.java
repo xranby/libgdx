@@ -50,6 +50,7 @@ public class Table extends WidgetGroup {
 	static private float[] columnWeightedWidth, rowWeightedHeight;
 
 	private int columns, rows;
+	private boolean implicitEndRow;
 
 	private final Array<Cell> cells = new Array(4);
 	private final Cell cellDefaults;
@@ -193,6 +194,13 @@ public class Table extends WidgetGroup {
 		Cell<T> cell = obtainCell();
 		cell.actor = actor;
 
+		// The row was ended for layout, not be the user, so revert it.
+		if (implicitEndRow) {
+			implicitEndRow = false;
+			rows--;
+			cells.peek().endRow = false;
+		}
+
 		Array<Cell> cells = this.cells;
 		int cellCount = cells.size;
 		if (cellCount > 0) {
@@ -306,6 +314,7 @@ public class Table extends WidgetGroup {
 		columns = 0;
 		if (rowDefaults != null) cellPool.free(rowDefaults);
 		rowDefaults = null;
+		implicitEndRow = false;
 
 		super.clearChildren();
 	}
@@ -755,7 +764,12 @@ public class Table extends WidgetGroup {
 		Array<Cell> cells = this.cells;
 		int cellCount = cells.size;
 
-		if (cellCount > 0 && !cells.peek().endRow) endRow();
+		// Implicitly End the row for layout purposes.
+		if (cellCount > 0 && !cells.peek().endRow) {
+			endRow();
+			implicitEndRow = true;
+		} else
+			implicitEndRow = false;
 
 		int columns = this.columns, rows = this.rows;
 		float[] columnMinWidth = this.columnMinWidth = ensureSize(this.columnMinWidth, columns);
@@ -825,40 +839,6 @@ public class Table extends WidgetGroup {
 				expandWidth[ii] = expandX;
 		}
 
-		// Distribute any additional min and pref width added by colspanned cells to the columns spanned.
-		for (int i = 0; i < cellCount; i++) {
-			Cell c = cells.get(i);
-			int colspan = c.colspan;
-			if (colspan == 1) continue;
-			int column = c.column;
-
-			Actor a = c.actor;
-			float minWidth = c.minWidth.get(a);
-			float prefWidth = c.prefWidth.get(a);
-			float maxWidth = c.maxWidth.get(a);
-			if (prefWidth < minWidth) prefWidth = minWidth;
-			if (maxWidth > 0 && prefWidth > maxWidth) prefWidth = maxWidth;
-
-			float spannedMinWidth = -(c.computedPadLeft + c.computedPadRight), spannedPrefWidth = spannedMinWidth;
-			for (int ii = column, nn = ii + colspan; ii < nn; ii++) {
-				spannedMinWidth += columnMinWidth[ii];
-				spannedPrefWidth += columnPrefWidth[ii];
-			}
-
-			// Distribute extra space using expand, if any columns have expand.
-			float totalExpandWidth = 0;
-			for (int ii = column, nn = ii + colspan; ii < nn; ii++)
-				totalExpandWidth += expandWidth[ii];
-
-			float extraMinWidth = Math.max(0, minWidth - spannedMinWidth);
-			float extraPrefWidth = Math.max(0, prefWidth - spannedPrefWidth);
-			for (int ii = column, nn = ii + colspan; ii < nn; ii++) {
-				float ratio = totalExpandWidth == 0 ? 1f / colspan : expandWidth[ii] / totalExpandWidth;
-				columnMinWidth[ii] += extraMinWidth * ratio;
-				columnPrefWidth[ii] += extraPrefWidth * ratio;
-			}
-		}
-
 		// Collect uniform size.
 		float uniformMinWidth = 0, uniformMinHeight = 0;
 		float uniformPrefWidth = 0, uniformPrefHeight = 0;
@@ -892,6 +872,40 @@ public class Table extends WidgetGroup {
 					rowMinHeight[c.row] = uniformMinHeight + vpadding;
 					rowPrefHeight[c.row] = uniformPrefHeight + vpadding;
 				}
+			}
+		}
+
+		// Distribute any additional min and pref width added by colspanned cells to the columns spanned.
+		for (int i = 0; i < cellCount; i++) {
+			Cell c = cells.get(i);
+			int colspan = c.colspan;
+			if (colspan == 1) continue;
+			int column = c.column;
+
+			Actor a = c.actor;
+			float minWidth = c.minWidth.get(a);
+			float prefWidth = c.prefWidth.get(a);
+			float maxWidth = c.maxWidth.get(a);
+			if (prefWidth < minWidth) prefWidth = minWidth;
+			if (maxWidth > 0 && prefWidth > maxWidth) prefWidth = maxWidth;
+
+			float spannedMinWidth = -(c.computedPadLeft + c.computedPadRight), spannedPrefWidth = spannedMinWidth;
+			for (int ii = column, nn = ii + colspan; ii < nn; ii++) {
+				spannedMinWidth += columnMinWidth[ii];
+				spannedPrefWidth += columnPrefWidth[ii];
+			}
+
+			// Distribute extra space using expand, if any columns have expand.
+			float totalExpandWidth = 0;
+			for (int ii = column, nn = ii + colspan; ii < nn; ii++)
+				totalExpandWidth += expandWidth[ii];
+
+			float extraMinWidth = Math.max(0, minWidth - spannedMinWidth);
+			float extraPrefWidth = Math.max(0, prefWidth - spannedPrefWidth);
+			for (int ii = column, nn = ii + colspan; ii < nn; ii++) {
+				float ratio = totalExpandWidth == 0 ? 1f / colspan : expandWidth[ii] / totalExpandWidth;
+				columnMinWidth[ii] += extraMinWidth * ratio;
+				columnPrefWidth[ii] += extraPrefWidth * ratio;
 			}
 		}
 
