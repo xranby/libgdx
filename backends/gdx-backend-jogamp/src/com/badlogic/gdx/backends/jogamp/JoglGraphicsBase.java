@@ -162,7 +162,9 @@ public abstract class JoglGraphicsBase implements Graphics, GLEventListener {
 					((JoglInput) (Gdx.input)).processEvents();
 					frameId++;
 					listener.render();
-					((OpenALAudio) Gdx.audio).update();
+					if (Gdx.audio != null) {
+					    ((OpenALAudio) Gdx.audio).update();
+					}
 				}
 			}
 		}
