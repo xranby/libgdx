@@ -58,7 +58,6 @@ import javax.swing.event.DocumentListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.utils.Pool;
 
 public class JoglAwtInput implements JoglInput, MouseMotionListener, MouseListener, MouseWheelListener, KeyListener {
@@ -813,7 +812,11 @@ public class JoglAwtInput implements JoglInput, MouseMotionListener, MouseListen
 
 	@Override
 	public boolean isCatchBackKey() {
-		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	@Override
+	public boolean isCatchMenuKey () {
 		return false;
 	}
 }

@@ -21,17 +21,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.jogamp.nativewindow.util.Dimension;
-import com.jogamp.nativewindow.util.DimensionImmutable;
-import com.jogamp.nativewindow.util.PixelFormat;
-import com.jogamp.nativewindow.util.PixelRectangle;
 import com.jogamp.nativewindow.util.Point;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.Pool;
-import com.jogamp.newt.Display.PointerIcon;
 import com.jogamp.newt.event.KeyListener;
 import com.jogamp.newt.event.MouseEvent;
 import com.jogamp.newt.event.MouseListener;
@@ -660,6 +653,11 @@ public class JoglNewtInput implements JoglInput, MouseListener, KeyListener {
 	@Override
 	public boolean isCatchBackKey() {
 		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	@Override
+	public boolean isCatchMenuKey () {
 		return false;
 	}
 }
