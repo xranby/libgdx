@@ -2,7 +2,7 @@
 <project name="fetch-natives" default="all">
 	<property name="domain" value="http://libgdx.badlogicgames.com/nightlies/dist"/>
     <property name="robovm" value="http://libgdx.badlogicgames.com/robovm/robovm/lib/"/>
-    <property name="jogamp" value="http://jogamp.org/deployment/v2.3.1/jar/"/>
+    <property name="jogamp" value="http://jogamp.org/deployment/v2.3.2/jar/"/>
     <!--<property name="jogamp" value="http://jogamp.org/deployment/jogamp-current/jar/"/>-->
     
     <target name="fetch-jogamp">
@@ -27,8 +27,8 @@
         <get src="${jogamp}/joal-natives-solaris-i586.jar" dest="backends/gdx-backend-jogamp/libs"/>
         <get src="${jogamp}/joal-natives-windows-amd64.jar" dest="backends/gdx-backend-jogamp/libs"/>
         <get src="${jogamp}/joal-natives-windows-i586.jar" dest="backends/gdx-backend-jogamp/libs"/>
-        <copy file="backends/gdx-openal/libs/jlayer-1.0.1-libgdx.jar" todir="backends/gdx-backend-jogamp/libs"/>
-        <copy file="backends/gdx-openal/libs/jorbis.jar" todir="backends/gdx-backend-jogamp/libs"/>
+        <copy file="backends/gdx-backend-lwjgl/libs/jlayer-1.0.1-libgdx.jar" todir="backends/gdx-backend-jogamp/libs"/>
+        <copy file="backends/gdx-backend-lwjgl/libs/jorbis.jar" todir="backends/gdx-backend-jogamp/libs"/>
 	<get src="${jogamp}/jogl-all.jar" dest="backends/gdx-backend-jogamp/libs/"/>
         <get src="${jogamp}/jogl-all-natives-linux-amd64.jar" dest="backends/gdx-backend-jogamp/libs/"/>
         <get src="${jogamp}/jogl-all-natives-linux-armv6hf.jar" dest="backends/gdx-backend-jogamp/libs/"/>

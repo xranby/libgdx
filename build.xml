@@ -3,7 +3,7 @@
 	<property environment="env" />
 
 	<!-- library version -->
-	<property name="version" value="1.5.7-SNAPSHOT"/>
+	<property name="version" value="1.7.1-SNAPSHOT"/>
 
 	<!-- define distribution/output directory -->
 	<property name="distDir" value="${basedir}/dist"/>
@@ -67,7 +67,7 @@
 	</target>
 	
         <!-- gdx jogamp backend -->
-        <target name="gdx-jogamp" depends="gdx-core">
+        <target name="gdx-backend-jogamp" depends="gdx-core">
                 <ant antfile="fetch.xml">
                     <target name="fetch-jogamp"/>
                 </ant>
@@ -337,7 +337,7 @@
 		</javadoc>
 	</target>
 
-	<target name="jars" depends="clean,gdx-setup,gdx-core,gdx-backend-jogl,gdx-backend-lwjgl,gdx-backend-jglfw,gdx-backend-headless,gdx-backend-android,gdx-backend-gwt,gdx-backend-robovm,gdx-tools,gdx-box2d,gdx-box2d-gwt,gdx-controllers,gdx-controllers-desktop,gdx-controllers-android,gdx-controllers-gwt,gdx-freetype,gdx-bullet"/>
+	<target name="jars" depends="clean,gdx-setup,gdx-core,gdx-backend-jogamp,gdx-backend-lwjgl,gdx-backend-jglfw,gdx-backend-headless,gdx-backend-android,gdx-backend-gwt,gdx-backend-robovm,gdx-tools,gdx-box2d,gdx-box2d-gwt,gdx-controllers,gdx-controllers-desktop,gdx-controllers-android,gdx-controllers-gwt,gdx-freetype,gdx-bullet"/>
 
 	<target name="all" depends="jars,docs">
 		<!-- copy distribution files (licences etc.) -->
